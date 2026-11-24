@@ -12,13 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-      - name: Pobierz walidator Watch Face Format
+      - name: Sprawdź watchface.xml ze schematem WFF v2
         run: |
+          sudo apt-get install -y -qq libxml2-utils >/dev/null
           git clone --depth 1 https://github.com/google/watchface /tmp/wf
-          find /tmp/wf -maxdepth 4 -type d | grep -iv '\.git' | head -60
-          find /tmp/wf -name "*.xsd" | head -20
-          find /tmp/wf -iname "README*" -path "*valid*" | head
+          D=/tmp/wf/third_party/wff/specification/documents/2
+          ls $D
+          xmllint --noout --schema $D/watchface.xsd watchface/src/main/res/raw/watchface.xml
