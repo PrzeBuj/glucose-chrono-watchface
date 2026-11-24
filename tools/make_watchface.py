@@ -69,7 +69,8 @@ def text(x, y, w, h, content, size, color, weight="BOLD", align="CENTER", params
         f'<PartText x="{s(x)}" y="{s(y)}" width="{s(w)}" height="{s(h)}">'
         f'<Text align="{align}" ellipsis="TRUE">'
         f'<Font family="SYNC_TO_DEVICE" size="{f(size)}" weight="{weight}" color="{color}">'
-        f"<Template>{content}{p}</Template></Font></Text></PartText>"
+        + (f"<Template>{content}{p}</Template>" if params else content)
+        + "</Font></Text></PartText>"
     )
 
 
