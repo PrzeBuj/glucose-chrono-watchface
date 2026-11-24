@@ -12,6 +12,12 @@ K = 450 / 466  # skala z makiety
 
 
 def s(v):
+    """Współrzędne i wymiary: WFF wymaga liczb całkowitych."""
+    return int(round(v * K))
+
+
+def f(v):
+    """Grubości linii i rozmiary czcionek mogą być ułamkowe."""
     return round(v * K, 1)
 
 
@@ -38,19 +44,19 @@ def line(a, r1, r2, color, thickness, cap="BUTT", cx=C, cy=C):
     x2, y2 = polar(a, r2, cx, cy)
     return (
         f'<Line startX="{s(x1)}" startY="{s(y1)}" endX="{s(x2)}" endY="{s(y2)}">'
-        f'<Stroke color="{color}" thickness="{s(thickness)}" cap="{cap}"/></Line>'
+        f'<Stroke color="{color}" thickness="{f(thickness)}" cap="{cap}"/></Line>'
     )
 
 
 def ring(cx, cy, r, color, thickness, extra=""):
     return (
         f'<Arc centerX="{s(cx)}" centerY="{s(cy)}" width="{s(2 * r)}" height="{s(2 * r)}" '
-        f'startAngle="0" endAngle="360"><Stroke color="{color}" thickness="{s(thickness)}"/>{extra}</Arc>'
+        f'startAngle="0" endAngle="360"><Stroke color="{color}" thickness="{f(thickness)}"/>{extra}</Arc>'
     )
 
 
 def disc(cx, cy, r, fill, stroke=None, thickness=0):
-    st = f'<Stroke color="{stroke}" thickness="{s(thickness)}"/>' if stroke else ""
+    st = f'<Stroke color="{stroke}" thickness="{f(thickness)}"/>' if stroke else ""
     return (
         f'<Ellipse x="{s(cx - r)}" y="{s(cy - r)}" width="{s(2 * r)}" height="{s(2 * r)}">'
         f'<Fill color="{fill}"/>{st}</Ellipse>'
@@ -62,7 +68,7 @@ def text(x, y, w, h, content, size, color, weight="BOLD", align="CENTER", params
     return (
         f'<PartText x="{s(x)}" y="{s(y)}" width="{s(w)}" height="{s(h)}">'
         f'<Text align="{align}" ellipsis="TRUE">'
-        f'<Font family="SYNC_TO_DEVICE" size="{s(size)}" weight="{weight}" color="{color}">'
+        f'<Font family="SYNC_TO_DEVICE" size="{f(size)}" weight="{weight}" color="{color}">'
         f"<Template>{content}{p}</Template></Font></Text></PartText>"
     )
 
@@ -81,7 +87,7 @@ def dial():
     for dx in (-7, 7):
         d.append(
             f'<Line startX="{s(C + dx)}" startY="{s(40)}" endX="{s(C + dx)}" endY="{s(62)}">'
-            f'<Stroke color="{WHITE}" thickness="{s(8)}" cap="ROUND"/></Line>'
+            f'<Stroke color="{WHITE}" thickness="{f(8)}" cap="ROUND"/></Line>'
         )
     # lewa tarczka (temperatura)
     d.append(disc(128, 212, 46, SUB, WHITE, 2.5))
@@ -92,14 +98,14 @@ def dial():
     d.append(ring(338, 212, 38, TRACK, 5))
     d.append(
         f'<Arc centerX="{s(338)}" centerY="{s(212)}" width="{s(76)}" height="{s(76)}" startAngle="0" endAngle="0">'
-        f'<Stroke color="{ACCENT}" thickness="{s(5)}" cap="ROUND"/>'
+        f'<Stroke color="{ACCENT}" thickness="{f(5)}" cap="ROUND"/>'
         f'<Transform target="endAngle" value="[BATTERY_PERCENT] * 3.6"/></Arc>'
     )
     # okienko z godziną cyfrową
     d.append(
         f'<RoundRectangle x="{s(160)}" y="{s(68)}" width="{s(146)}" height="{s(56)}" '
         f'cornerRadiusX="{s(10)}" cornerRadiusY="{s(10)}"><Fill color="{BLACK}"/>'
-        f'<Stroke color="{WHITE}" thickness="{s(2)}"/></RoundRectangle>'
+        f'<Stroke color="{WHITE}" thickness="{f(2)}"/></RoundRectangle>'
     )
     return '<PartDraw x="0" y="0" width="450" height="450">' + "".join(d) + "</PartDraw>"
 
@@ -117,7 +123,7 @@ def digital():
         f'<DigitalClock x="{s(160)}" y="{s(70)}" width="{s(146)}" height="{s(52)}">'
         f'<TimeText format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER" x="0" y="0" '
         f'width="{s(146)}" height="{s(52)}">'
-        f'<Font family="SYNC_TO_DEVICE" size="{s(42)}" weight="BOLD" color="{WHITE}"/>'
+        f'<Font family="SYNC_TO_DEVICE" size="{f(42)}" weight="BOLD" color="{WHITE}"/>'
         f"</TimeText></DigitalClock>"
     )
 
@@ -177,7 +183,7 @@ def graph_slot():
     frame = (
         f'<PartDraw x="0" y="0" width="{s(w)}" height="{s(h)}">'
         f'<RoundRectangle x="0" y="0" width="{s(w)}" height="{s(h)}" cornerRadiusX="{s(10)}" cornerRadiusY="{s(10)}">'
-        f'<Fill color="{BLACK}"/><Stroke color="#FF3A3F46" thickness="{s(1.5)}"/></RoundRectangle></PartDraw>'
+        f'<Fill color="{BLACK}"/><Stroke color="#FF3A3F46" thickness="{f(1.5)}"/></RoundRectangle></PartDraw>'
     )
 
     def img(expr):
@@ -203,7 +209,7 @@ def hands():
     return (
         '<AnalogClock x="0" y="0" width="450" height="450">'
         '<HourHand resource="hand_hour" x="219" y="124" width="12" height="118" pivotX="0.5" pivotY="0.8559"/>'
-        '<MinuteHand resource="hand_minute" x="220.5" y="46" width="9" height="201" pivotX="0.5" pivotY="0.8905"/>'
+        '<MinuteHand resource="hand_minute" x="220" y="46" width="10" height="201" pivotX="0.5" pivotY="0.8905"/>'
         "</AnalogClock>"
         '<AnalogClock x="0" y="0" width="450" height="450">'
         '<SecondHand resource="hand_second" x="220" y="29" width="10" height="249" pivotX="0.5" pivotY="0.7871">'
