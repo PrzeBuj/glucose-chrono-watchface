@@ -16,8 +16,10 @@ https://github.com/PrzeBuj/glucose-chrono-watchface/releases/download/play/gluco
 
 ## 3. Pierwsze wydanie w Play Console (raz, ręcznie — API Google nie pozwala utworzyć nowej aplikacji)
 1. **Utwórz aplikację**: nazwa „Glucose Chrono”, aplikacja, bezpłatna.
-2. **Test and release › Advanced settings › Form factors**: dodaj **Wear OS**.
-3. **Testing › Internal testing**: dodaj siebie do testerów (lista e-mail), **Create new release**, wgraj plik AAB, zapisz i wdroż.
+2. **Test and release › Advanced settings › Form factors** (Ustawienia zaawansowane › Formaty): dodaj **Wear OS**.
+   Google Play wymaga osobnej ścieżki Wear OS — pakiet wgrany na zwykłą ścieżkę (telefon) zostanie odrzucony.
+3. **Testing › Internal testing**: u góry przełącz ścieżkę na **Wear OS**, dodaj siebie do testerów (lista e-mail),
+   **Create new release**, wgraj plik AAB, zapisz i wdroż.
 4. Otwórz link dla testerów na telefonie, zaakceptuj, potem zainstaluj tarczę ze Sklepu Play na zegarku
    (albo z telefonu: Sklep Play › wybierz zegarek jako urządzenie).
 

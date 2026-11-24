@@ -68,5 +68,5 @@ jobs:
           serviceAccountJson: ${{ steps.gcp.outputs.credentials_file_path }}
           packageName: com.glucosechrono.watchface
           releaseFiles: glucose-chrono-watchface.aab
-          track: internal
+          track: wear:internal
           status: completed
