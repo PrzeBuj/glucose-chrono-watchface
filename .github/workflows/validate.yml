@@ -20,5 +20,6 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/google/watchface /tmp/wf
           cd /tmp/wf/third_party/wff
-          ls; cat settings.gradle* ; ls specification/validator; cat specification/validator/build.gradle* | head -60
-          find . -iname "README*" | head; cat README.md 2>/dev/null | head -60
+          chmod +x gradlew
+          ./gradlew -q :specification:validator:executable-jar
+          java -jar specification/validator/build/libs/wff-validator.jar 2 "$GITHUB_WORKSPACE/watchface/src/main/res/raw/watchface.xml"
