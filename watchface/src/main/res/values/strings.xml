@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chronograf z glukozą</string>
+    <string name="slot_glucose">Glukoza</string>
+    <string name="slot_graph">Wykres glukozy</string>
+</resources>
