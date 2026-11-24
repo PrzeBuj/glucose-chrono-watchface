@@ -19,6 +19,6 @@ jobs:
       - name: Sprawdź watchface.xml oficjalnym walidatorem WFF
         run: |
           git clone --depth 1 https://github.com/google/watchface /tmp/wf
-          cat /tmp/wf/tools/dwf-validator-cli/build.gradle
-          cat /tmp/wf/tools/settings.gradle
-          cd /tmp/wf/tools && chmod +x gradlew && ./gradlew -q tasks --all | grep -i "validator" | head -40
+          cd /tmp/wf/third_party/wff
+          ls; cat settings.gradle* ; ls specification/validator; cat specification/validator/build.gradle* | head -60
+          find . -iname "README*" | head; cat README.md 2>/dev/null | head -60
