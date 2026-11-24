@@ -216,38 +216,38 @@ def slot(slot_id, name, x, y, w, h, types, bounding, bodies, default=("EMPTY", "
 
 
 def glucose_slot():
-    # 260x56: duża wartość, strzałka trendu (ikona), mały podpis
+    # 290x56 pod osią wskazówek: duża wartość wyrównana do prawej, tuż obok strzałka trendu i mały podpis.
     body = (
-        text(0, 0, 260, 54, "%s", 48, WHITE, params=("[COMPLICATION.TEXT]",))
-        + image(206, 12, 28, 28, "[COMPLICATION.MONOCHROMATIC_IMAGE]", ACCENT)
-        + text(196, 40, 64, 16, "%s", 12, GREY, weight="NORMAL", params=("[COMPLICATION.TITLE]",))
+        text(0, 0, 182, 56, "%s", 54, WHITE, align="END", params=("[COMPLICATION.TEXT]",))
+        + image(186, 10, 36, 36, "[COMPLICATION.MONOCHROMATIC_IMAGE]", WHITE)
+        + text(226, 18, 64, 20, "%s", 13, GREY, weight="NORMAL", align="START", params=("[COMPLICATION.TITLE]",))
     )
     return slot(
-        0, "slot_glucose", 103, 252, 260, 56, ["SHORT_TEXT", "RANGED_VALUE"],
-        f'<BoundingBox x="0" y="0" width="{s(260)}" height="{s(56)}"/>',
+        0, "slot_glucose", 90, 290, 290, 56, ["SHORT_TEXT", "RANGED_VALUE"],
+        f'<BoundingBox x="0" y="0" width="{s(290)}" height="{s(56)}"/>',
         {"SHORT_TEXT": body, "RANGED_VALUE": body},
     )
 
 
 def delta_slot():
-    # 200x20: np. „+4 · 2 min”
-    body = text(0, 0, 200, 20, "%s  %s", 14, LIGHT, params=("[COMPLICATION.TEXT]", "[COMPLICATION.TITLE]"))
+    # 200x18: np. „+4 · 2 min”
+    body = text(0, 0, 200, 18, "%s  %s", 14, LIGHT, params=("[COMPLICATION.TEXT]", "[COMPLICATION.TITLE]"))
     return slot(
-        1, "slot_delta", 133, 304, 200, 20, ["SHORT_TEXT"],
-        f'<BoundingBox x="0" y="0" width="{s(200)}" height="{s(20)}"/>',
+        1, "slot_delta", 133, 347, 200, 18, ["SHORT_TEXT"],
+        f'<BoundingBox x="0" y="0" width="{s(200)}" height="{s(18)}"/>',
         {"SHORT_TEXT": body},
     )
 
 
 def graph_slot():
-    w, h = 180, 58
+    w, h = 190, 54
     frame = (
         f'<PartDraw x="0" y="0" width="{s(w)}" height="{s(h)}">'
         f'<RoundRectangle x="0" y="0" width="{s(w)}" height="{s(h)}" cornerRadiusX="{s(10)}" cornerRadiusY="{s(10)}">'
         f'<Fill color="{BLACK}"/><Stroke color="#FF3A3F46" thickness="{f(1.5)}"/></RoundRectangle></PartDraw>'
     )
     return slot(
-        2, "slot_graph", 143, 326, w, h, ["PHOTO_IMAGE", "SMALL_IMAGE"],
+        2, "slot_graph", 138, 366, w, h, ["PHOTO_IMAGE", "SMALL_IMAGE"],
         f'<BoundingRoundBox x="0" y="0" width="{s(w)}" height="{s(h)}" cornerRadius="{s(10)}"/>',
         {
             "PHOTO_IMAGE": frame + image(3, 3, w - 6, h - 6, "[COMPLICATION.PHOTO_IMAGE]"),
@@ -283,11 +283,11 @@ def subdial_slot(slot_id, name, cx, default):
 
 
 def bottom_slot():
-    # 160x18 pod wykresem, np. czas działania sensora
-    body = text(0, 0, 160, 18, "%s %s", 11, GREY, params=("[COMPLICATION.TITLE]", "[COMPLICATION.TEXT]"))
+    # 100x14 na samym dole, np. czas działania sensora
+    body = text(0, 0, 100, 14, "%s %s", 10, GREY, params=("[COMPLICATION.TITLE]", "[COMPLICATION.TEXT]"))
     return slot(
-        5, "slot_bottom", 153, 388, 160, 18, ["SHORT_TEXT"],
-        f'<BoundingBox x="0" y="0" width="{s(160)}" height="{s(18)}"/>',
+        5, "slot_bottom", 183, 421, 100, 14, ["SHORT_TEXT"],
+        f'<BoundingBox x="0" y="0" width="{s(100)}" height="{s(14)}"/>',
         {"SHORT_TEXT": body},
     )
 

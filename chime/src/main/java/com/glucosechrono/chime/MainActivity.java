@@ -52,6 +52,9 @@ public class MainActivity extends Activity {
         list.setPadding(side, dp(28), side, dp(40));
         scroll.addView(list);
         setContentView(scroll);
+        // pokrętło zegarka przewija listę
+        scroll.setFocusableInTouchMode(true);
+        scroll.requestFocus();
 
         TextView title = new TextView(this);
         title.setText(R.string.app_name);
