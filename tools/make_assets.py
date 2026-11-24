@@ -45,9 +45,10 @@ def second_hand():
     img = canvas(w, h)
     d = ImageDraw.Draw(img)
     cx = w * SS / 2
-    d.rounded_rectangle([cx - 1.1 * SS, 0, cx + 1.1 * SS, h * SS - 1], radius=1.1 * SS, fill=RED)
+    # biały: kolor nadaje motyw tarczy (tintColor)
+    d.rounded_rectangle([cx - 1.1 * SS, 0, cx + 1.1 * SS, h * SS - 1], radius=1.1 * SS, fill=WHITE)
     # przeciwwaga
-    d.rounded_rectangle([1 * SS, 221 * SS, 9 * SS, 248 * SS], radius=3 * SS, fill=RED)
+    d.rounded_rectangle([1 * SS, 221 * SS, 9 * SS, 248 * SS], radius=3 * SS, fill=WHITE)
     save(img, w, h, "hand_second.png")
 
 
@@ -58,8 +59,17 @@ def heart():
     s = SS * w / 24
     pts = [(12, 21), (4.2, 13.4), (3.2, 12.4), (2.4, 9), (3.2, 5.6), (6, 3.6), (9, 3.6), (12, 6)]
     pts += [(15, 3.6), (18, 3.6), (20.8, 5.6), (21.6, 9), (20.8, 12.4), (19.8, 13.4)]
-    d.polygon([(x * s, y * s) for x, y in pts], fill=RED)
+    d.polygon([(x * s, y * s) for x, y in pts], fill=WHITE)
     save(img, w, h, "ic_heart.png")
+
+
+def battery():
+    w, h = 18, 14
+    img = canvas(w, h)
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([1 * SS, 2 * SS, 15 * SS, 12 * SS], radius=2 * SS, outline=WHITE, width=int(1.8 * SS))
+    d.rectangle([15.5 * SS, 5 * SS, 17 * SS, 9 * SS], fill=WHITE)
+    save(img, w, h, "ic_battery.png")
 
 
 if __name__ == "__main__":
@@ -68,4 +78,5 @@ if __name__ == "__main__":
     minute_hand()
     second_hand()
     heart()
+    battery()
     print("Zapisano do", OUT)

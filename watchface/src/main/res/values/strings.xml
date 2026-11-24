@@ -2,5 +2,20 @@
 <resources>
     <string name="app_name">Chronograf z glukozą</string>
     <string name="slot_glucose">Glukoza</string>
+    <string name="slot_delta">Delta i czas odczytu</string>
     <string name="slot_graph">Wykres glukozy</string>
+    <string name="slot_left">Lewa tarczka</string>
+    <string name="slot_right">Prawa tarczka</string>
+    <string name="slot_bottom">Pole pod wykresem</string>
+    <string name="cfg_theme">Kolory</string>
+    <string name="cfg_dial">Tło tarczy</string>
+    <string name="theme_blue">Niebieski i czerwony</string>
+    <string name="theme_teal">Turkus i pomarańcz</string>
+    <string name="theme_purple">Fiolet i żółty</string>
+    <string name="theme_green">Zieleń i biel</string>
+    <string name="theme_white">Biel i czerwień</string>
+    <string name="dial_graphite">Grafit</string>
+    <string name="dial_black">Czarny</string>
+    <string name="dial_navy">Granat</string>
+    <string name="dial_green">Butelkowa zieleń</string>
 </resources>
