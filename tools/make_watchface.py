@@ -102,6 +102,34 @@ def image(x, y, w, h, resource, tint=None):
 
 # ---------------------------------------------------------------- tło i skale
 
+def gears():
+    """Mechanizm w tle: koła zębate przeskakują co sekundę jak w zegarku mechanicznym.
+
+    Duże koło (60 zębów) obraca się raz na minutę, małe (26 zębów) w przeciwną stronę,
+    o jeden ząb na sekundę, tak jakby się zazębiały. W trybie Always-On są ukryte.
+    """
+    big = s(304)
+    small = s(132)
+    parts = [
+        f'<PartImage x="{s(C) - big // 2}" y="{s(C) - big // 2}" width="{big}" height="{big}" pivotX="0.5" pivotY="0.5">'
+        '<Image resource="gear_big"/>'
+        '<Transform target="angle" value="([SECONDS_IN_DAY] % 60) * 6"/></PartImage>'
+    ]
+    for cx in (128, 338):
+        parts.append(
+            f'<PartImage x="{s(cx) - small // 2}" y="{s(212) - small // 2}" width="{small}" height="{small}" pivotX="0.5" pivotY="0.5">'
+            '<Image resource="gear_small"/>'
+            '<Transform target="angle" value="360 - ([SECONDS_IN_DAY] % 26) * 13.846"/></PartImage>'
+        )
+    return (
+        '<BooleanConfiguration id="gears"><BooleanOption id="TRUE">'
+        '<Group name="gears" x="0" y="0" width="450" height="450">'
+        + "".join(parts)
+        + '<Variant mode="AMBIENT" target="alpha" value="0"/></Group>'
+        "</BooleanOption></BooleanConfiguration>"
+    )
+
+
 def background():
     return (
         '<PartDraw x="0" y="0" width="450" height="450">'
@@ -288,13 +316,14 @@ def user_configurations():
         "<UserConfigurations>"
         f'<ColorConfiguration id="theme" displayName="@string/cfg_theme" defaultValue="0">{themes}</ColorConfiguration>'
         f'<ColorConfiguration id="dial" displayName="@string/cfg_dial" defaultValue="0">{dials}</ColorConfiguration>'
+        '<BooleanConfiguration id="gears" displayName="@string/cfg_gears" defaultValue="TRUE"/>'
         "</UserConfigurations>"
     )
 
 
 def build():
     body = (
-        background() + dial() + numerals() + digital() + info_row()
+        background() + gears() + dial() + numerals() + digital() + info_row()
         + subdial_slot(3, "slot_left", 128, ("EMPTY", "EMPTY"))
         + subdial_slot(4, "slot_right", 338, ("WATCH_BATTERY", "RANGED_VALUE"))
         + glucose_slot() + delta_slot() + graph_slot() + bottom_slot() + hands()

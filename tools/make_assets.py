@@ -72,6 +72,48 @@ def battery():
     save(img, w, h, "ic_battery.png")
 
 
+def gear(name, r_out, teeth, spokes, r_hub=None, alpha=34):
+    """Koło zębate jak w mechanizmie zegarka: obręcz z zębami, szprychy i piasta (białe, półprzezroczyste)."""
+    import math
+    size = int(2 * r_out + 4)
+    img = canvas(size, size)
+    d = ImageDraw.Draw(img)
+    c = size * SS / 2
+    col = (255, 255, 255, alpha)
+    tooth = r_out * 0.10
+    r_root = r_out - tooth
+    pts = []
+    for i in range(teeth):
+        a0 = 2 * math.pi * i / teeth
+        step = 2 * math.pi / teeth
+        for frac, r in ((0.0, r_root), (0.15, r_out), (0.45, r_out), (0.6, r_root)):
+            a = a0 + step * frac
+            pts.append((c + r * SS * math.sin(a), c - r * SS * math.cos(a)))
+    d.polygon(pts, fill=col)
+    # wycięcie środka obręczy, zostawiamy obręcz o grubości ~12% promienia
+    r_in = r_root * 0.86
+    hole = Image.new("L", img.size, 0)
+    hd = ImageDraw.Draw(hole)
+    hd.ellipse([c - r_in * SS, c - r_in * SS, c + r_in * SS, c + r_in * SS], fill=255)
+    # szprychy i piasta zostają
+    w = r_out * 0.09 * SS
+    for k in range(spokes):
+        a = 2 * math.pi * k / spokes
+        dx, dy = math.sin(a), -math.cos(a)
+        px, py = -dy * w / 2, dx * w / 2
+        hd.polygon([(c + px, c + py), (c - px, c - py),
+                    (c - px + dx * r_in * SS, c - py + dy * r_in * SS),
+                    (c + px + dx * r_in * SS, c + py + dy * r_in * SS)], fill=0)
+    rh = (r_hub or r_out * 0.18) * SS
+    hd.ellipse([c - rh, c - rh, c + rh, c + rh], fill=0)
+    clear = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    img = Image.composite(clear, img, hole)
+    d = ImageDraw.Draw(img)
+    rp = rh * 0.35
+    d.ellipse([c - rp, c - rp, c + rp, c + rp], fill=(0, 0, 0, 0))
+    save(img, size, size, name)
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     hour_hand()
@@ -79,4 +121,6 @@ if __name__ == "__main__":
     second_hand()
     heart()
     battery()
+    gear("gear_big.png", 150, 60, 6)
+    gear("gear_small.png", 64, 26, 5)
     print("Zapisano do", OUT)
