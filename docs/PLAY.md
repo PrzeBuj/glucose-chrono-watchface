@@ -38,9 +38,7 @@ Workflow może sam wysyłać pakiet do testów wewnętrznych jako konto `github-
    ```
 2. Play Console › **Users and permissions** › `github-deploy@friend-radar-354a3.iam.gserviceaccount.com` › dodaj
    aplikację Glucose Chrono z uprawnieniem *Release apps to testing tracks*.
-3. GitHub › Settings › Secrets and variables › Actions › **Variables**:
-   - `PLAY_UPLOAD` = `true`
-   - `WIF_PROVIDER` = `projects/136179368301/locations/global/workloadIdentityPools/github/providers/glucose-chrono`
-   - `WIF_SERVICE_ACCOUNT` = `github-deploy@friend-radar-354a3.iam.gserviceaccount.com`
+Adres dostawcy i konto są już wpisane w `release.yml`, w GitHubie nie trzeba nic ustawiać
+(zmienna `PLAY_UPLOAD=false` wyłącza wysyłanie).
 
 Od tej pory „Run workflow” od razu wysyła nową wersję do testerów.

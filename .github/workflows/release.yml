@@ -1,8 +1,8 @@
 name: Release (Google Play)
 
 # Buduje podpisany pakiet AAB dla Google Play. Uruchamiany ręcznie: Actions › Release (Google Play) › Run workflow.
-# Pakiet trafia do wydania „play” na GitHubie (do ręcznego wgrania w Play Console), a gdy ustawiona jest zmienna
-# repozytorium PLAY_UPLOAD=true, także od razu do testów wewnętrznych w Google Play. Opis: docs/PLAY.md.
+# Pakiet trafia do wydania „play” na GitHubie (do ręcznego wgrania w Play Console), a potem od razu do testów
+# wewnętrznych w Google Play (ścieżka Wear OS). Zmienna repozytorium PLAY_UPLOAD=false wyłącza wysyłanie. Opis: docs/PLAY.md.
 on:
   workflow_dispatch:
 
@@ -56,13 +56,13 @@ jobs:
           gh release upload play glucose-chrono-watchface.aab --clobber
       # Automatyczne wysyłanie do Google Play (opcjonalne, po jednorazowej konfiguracji z docs/PLAY.md).
       - uses: google-github-actions/auth@v2
-        if: vars.PLAY_UPLOAD == 'true' && github.ref == 'refs/heads/main'
+        if: vars.PLAY_UPLOAD != 'false' && github.ref == 'refs/heads/main'
         id: gcp
         with:
-          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+          workload_identity_provider: projects/136179368301/locations/global/workloadIdentityPools/github/providers/glucose-chrono
+          service_account: github-deploy@friend-radar-354a3.iam.gserviceaccount.com
       - name: Wyślij do testów wewnętrznych Google Play
-        if: vars.PLAY_UPLOAD == 'true' && github.ref == 'refs/heads/main'
+        if: vars.PLAY_UPLOAD != 'false' && github.ref == 'refs/heads/main'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJson: ${{ steps.gcp.outputs.credentials_file_path }}
