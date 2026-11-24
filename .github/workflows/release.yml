@@ -39,6 +39,10 @@ jobs:
           gradle :watchface:bundleRelease -PversionCode=$((100 + GITHUB_RUN_NUMBER)) -PversionName=1.0.$GITHUB_RUN_NUMBER --no-daemon
           cp watchface/build/outputs/bundle/release/watchface-release.aab glucose-chrono-watchface.aab
           jarsigner -verify glucose-chrono-watchface.aab | grep -q "jar verified"
+          if unzip -l glucose-chrono-watchface.aab | grep -q '\.dex'; then
+            unzip -l glucose-chrono-watchface.aab | grep '\.dex'
+            echo "::error::Pakiet zawiera pliki .dex, a tarcza WFF nie może mieć kodu."; exit 1
+          fi
       - name: Usuń odkodowany klucz
         if: always()
         run: rm -f "$RUNNER_TEMP/upload.jks"

@@ -23,6 +23,13 @@ jobs:
         run: |
           gradle :watchface:assembleRelease --no-daemon
           cp watchface/build/outputs/apk/release/*.apk glucose-chrono-watchface.apk
+          gradle :watchface:bundleRelease --no-daemon
+          if unzip -l watchface/build/outputs/bundle/release/*.aab | grep '\.dex'; then
+            echo "::error::Pakiet zawiera pliki .dex, a tarcza WFF nie może mieć kodu."; exit 1
+          fi
+          if unzip -l glucose-chrono-watchface.apk | grep '\.dex'; then
+            echo "::error::APK zawiera pliki .dex."; exit 1
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: tarcza-glukoza-apk

@@ -32,7 +32,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Tarcza WFF nie może mieć żadnych plików .dex (wymóg Google Play). R8 usuwa
+            // wygenerowane klasy R, więc w pakiecie nie zostaje żaden kod.
+            isMinifyEnabled = true
             // Z kluczem przesyłania, gdy jest dostępny; inaczej klucz debug (APK do wgrania ręcznie).
             signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
         }
