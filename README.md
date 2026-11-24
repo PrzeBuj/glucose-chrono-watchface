@@ -18,6 +18,14 @@ python3 tools/make_watchface.py  # res/raw/watchface.xml
 ```
 
 ## Ustawienie po instalacji
-Przytrzymaj tarczę → Edytuj → Komplikacje:
-- pole **Glukoza** → GlucoDataHandler → wartość glukozy z trendem,
-- pole **Wykres glukozy** → GlucoDataHandler → Wykres 3x1.
+Przytrzymaj tarczę → Edytuj:
+- **Kolory**: 5 motywów (akcent + sekundnik), **Tło tarczy**: 4 kolory.
+- **Komplikacje** (każdą można zmienić na dowolne dane GlucoDataHandler lub inne):
+  - Glukoza → GlucoDataHandler „Glukoza i trend”,
+  - Delta i czas odczytu → „Delta i znacznik czasu”,
+  - Wykres glukozy → „Wykres 3x1”,
+  - Lewa tarczka → „IOB/COB”,
+  - Prawa tarczka → „Poziom baterii telefonu” (domyślnie bateria zegarka),
+  - Pole pod wykresem → „Czas działania sensora”.
+
+Temperatura, bateria zegarka i puls (rząd pod godziną) pochodzą z Wear OS.
