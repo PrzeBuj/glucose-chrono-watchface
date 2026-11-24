@@ -203,6 +203,9 @@ def info_row():
 
 def slot(slot_id, name, x, y, w, h, types, bounding, bodies, default=("EMPTY", "EMPTY")):
     inner = "".join(f'<Complication type="{t}">{bodies[t]}</Complication>' for t in types)
+    # Typ domyślny musi być jednym z obsługiwanych; "EMPTY" jako typ blokuje ustawienie tarczy na zegarku.
+    if default[1] == "EMPTY":
+        default = (default[0], types[0])
     return (
         f'<ComplicationSlot slotId="{slot_id}" displayName="@string/{name}" '
         f'x="{s(x)}" y="{s(y)}" width="{s(w)}" height="{s(h)}" '
