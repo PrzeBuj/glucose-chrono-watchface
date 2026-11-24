@@ -13,3 +13,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "tarcza-glukoza"
 include(":watchface")
+include(":chime")

@@ -24,4 +24,19 @@ for apk in apks/*.apk; do
   grep -E "DWF|FavoriteOperation|DebugSurface|AndroidRuntime" shots/$n.log | grep -vE "bounds|supported types|s\.a@|####" | tail -25
 done
 cat shots/results.txt
+
+# Sygnał godzinowy
+if [ -f chime.apk ]; then
+  adb logcat -c
+  adb install -r chime.apk
+  adb shell am start -W -n com.glucosechrono.chime/.MainActivity
+  sleep 8
+  adb exec-out screencap -p > shots/chime.png
+  adb shell input swipe 200 380 200 80 300
+  sleep 2
+  adb exec-out screencap -p > shots/chime2.png
+  echo "ALARMS:"; adb shell dumpsys alarm | grep -A3 glucosechrono.chime | head -20
+  adb logcat -d > shots/chime.log
+  grep -E "AndroidRuntime|glucosechrono" shots/chime.log | tail -20
+fi
 exit 0

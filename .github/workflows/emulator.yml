@@ -33,7 +33,9 @@ jobs:
           cp /tmp/orig.xml $RAW
           gradle :watchface:assembleDebug --no-daemon -q
           cp watchface/build/outputs/apk/debug/*.apk apks/z_full_debug.apk
-          ls -la apks
+          gradle :chime:assembleDebug --no-daemon -q
+          cp chime/build/outputs/apk/debug/*.apk chime.apk
+          ls -la apks chime.apk
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules

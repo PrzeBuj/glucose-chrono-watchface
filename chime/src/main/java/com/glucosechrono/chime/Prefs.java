@@ -1,0 +1,39 @@
+package com.glucosechrono.chime;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+/** Ustawienia sygnału godzinowego. */
+final class Prefs {
+    static final String ENABLED = "enabled";
+    static final String DOUBLE = "double";
+    static final String VOLUME = "volume";       // 0 cicho, 1 średnio, 2 głośno
+    static final String VIBRATE = "vibrate";
+    static final String NIGHT = "night";         // cisza nocna
+    static final String NIGHT_FROM = "night_from";
+    static final String NIGHT_TO = "night_to";
+    static final String RESPECT_DND = "respect_dnd";
+
+    private Prefs() {}
+
+    static SharedPreferences get(Context c) {
+        return c.getSharedPreferences("chime", Context.MODE_PRIVATE);
+    }
+
+    static boolean enabled(Context c) { return get(c).getBoolean(ENABLED, true); }
+    static boolean doubleBeep(Context c) { return get(c).getBoolean(DOUBLE, true); }
+    static int volume(Context c) { return get(c).getInt(VOLUME, 1); }
+    static boolean vibrate(Context c) { return get(c).getBoolean(VIBRATE, false); }
+    static boolean night(Context c) { return get(c).getBoolean(NIGHT, true); }
+    static int nightFrom(Context c) { return get(c).getInt(NIGHT_FROM, 23); }
+    static int nightTo(Context c) { return get(c).getInt(NIGHT_TO, 7); }
+    static boolean respectDnd(Context c) { return get(c).getBoolean(RESPECT_DND, true); }
+
+    /** Czy o tej godzinie (0-23) obowiązuje cisza nocna. */
+    static boolean isNightHour(Context c, int hour) {
+        if (!night(c)) return false;
+        int from = nightFrom(c), to = nightTo(c);
+        if (from == to) return false;
+        return from < to ? (hour >= from && hour < to) : (hour >= from || hour < to);
+    }
+}
