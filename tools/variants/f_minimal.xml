@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WatchFace width="450" height="450">
+<Metadata key="CLOCK_TYPE" value="ANALOG"/>
+<Metadata key="PREVIEW_TIME" value="10:09:22"/>
+
+<Scene backgroundColor="#FF101215"><PartDraw x="0" y="0" width="450" height="450"><Rectangle x="0" y="0" width="450" height="450"><Fill color="#FF203040"/></Rectangle></PartDraw><AnalogClock x="0" y="0" width="450" height="450"><HourHand resource="hand_hour" x="219" y="124" width="12" height="118" pivotX="0.5" pivotY="0.8559"/><MinuteHand resource="hand_minute" x="220" y="46" width="10" height="201" pivotX="0.5" pivotY="0.8905"/></AnalogClock></Scene>
+</WatchFace>
