@@ -10,14 +10,23 @@ import android.os.Vibrator;
 /** Krótki, wysoki „piik” jak w klasycznych zegarkach cyfrowych (brzęczyk ok. 4 kHz). */
 final class Beeper {
     private static final int RATE = 44100;
-    private static final double FREQ = 4000;
-    private static final int BEEP_MS = 70;
-    private static final int GAP_MS = 90;
+
+    /** Barwy dźwięku: częstotliwość, długość „piik”, przerwa, wybrzmiewanie (0 = brak), ostrość (harmoniczne). */
+    private static final double[][] TONES = {
+            {4000, 70, 90, 0, 0.25},    // cyfrowy: wysoki brzęczyk, jak klasyczny zegarek cyfrowy
+            {2048, 90, 110, 0, 0.08},   // niski: łagodniejszy, niższy ton
+            {1568, 260, 120, 9, 0.35},  // dzwonek: krótkie „dzyń” z wybrzmieniem
+            {3200, 45, 60, 0, 0.55},    // elektroniczny: krótki, ostry „tik-tik”
+    };
 
     private Beeper() {}
 
     /** Odtwarza sygnał i czeka do końca (wywoływać poza wątkiem głównym). */
     static void play(Context c, boolean twice, int volume, boolean vibrate) {
+        play(c, twice, volume, vibrate, Prefs.tone(c));
+    }
+
+    static void play(Context c, boolean twice, int volume, boolean vibrate, int tone) {
         if (vibrate) {
             Vibrator v = c.getSystemService(Vibrator.class);
             if (v != null && v.hasVibrator()) {
@@ -25,7 +34,8 @@ final class Beeper {
                 v.vibrate(VibrationEffect.createWaveform(pattern, -1));
             }
         }
-        short[] pcm = samples(twice, new float[]{0.25f, 0.55f, 1.0f}[Math.max(0, Math.min(2, volume))]);
+        double[] t = TONES[Math.max(0, Math.min(TONES.length - 1, tone))];
+        short[] pcm = samples(t, twice, new float[]{0.25f, 0.55f, 1.0f}[Math.max(0, Math.min(2, volume))]);
         AudioTrack track = new AudioTrack.Builder()
                 .setAudioAttributes(new AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
@@ -49,24 +59,26 @@ final class Beeper {
         }
     }
 
-    private static short[] samples(boolean twice, float amp) {
-        int beep = RATE * BEEP_MS / 1000;
-        int gap = RATE * GAP_MS / 1000;
+    private static short[] samples(double[] t, boolean twice, float amp) {
+        int beep = (int) (RATE * t[1] / 1000);
+        int gap = (int) (RATE * t[2] / 1000);
         int total = twice ? beep * 2 + gap : beep;
         short[] out = new short[total + RATE / 50];
-        writeBeep(out, 0, beep, amp);
-        if (twice) writeBeep(out, beep + gap, beep, amp);
+        writeBeep(out, 0, beep, amp, t);
+        if (twice) writeBeep(out, beep + gap, beep, amp, t);
         return out;
     }
 
-    private static void writeBeep(short[] out, int start, int len, float amp) {
+    private static void writeBeep(short[] out, int start, int len, float amp, double[] t) {
+        double freq = t[0], decay = t[3], harm = t[4];
         int fade = RATE * 4 / 1000; // 4 ms, bez trzasków
         for (int i = 0; i < len; i++) {
             double env = Math.min(1.0, Math.min(i, len - 1 - i) / (double) fade);
-            double t = i / (double) RATE;
-            // fala zbliżona do prostokątnej, jak brzęczyk piezo, ale łagodniejsza dla ucha
-            double s = Math.sin(2 * Math.PI * FREQ * t) + 0.25 * Math.sin(2 * Math.PI * 3 * FREQ * t);
-            out[start + i] = (short) (s / 1.25 * env * amp * 30000);
+            double time = i / (double) RATE;
+            if (decay > 0) env *= Math.exp(-decay * time);
+            double s = Math.sin(2 * Math.PI * freq * time) + harm * Math.sin(2 * Math.PI * 3 * freq * time);
+            if (decay > 0) s += 0.4 * Math.sin(2 * Math.PI * 2.76 * freq * time) * Math.exp(-decay * 2 * time);
+            out[start + i] = (short) (s / (1 + harm + 0.4) * env * amp * 30000);
         }
     }
 }

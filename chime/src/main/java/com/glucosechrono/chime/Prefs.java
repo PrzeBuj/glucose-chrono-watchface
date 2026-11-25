@@ -8,6 +8,7 @@ final class Prefs {
     static final String ENABLED = "enabled";
     static final String DOUBLE = "double";
     static final String VOLUME = "volume";       // 0 cicho, 1 średnio, 2 głośno
+    static final String TONE = "tone";           // 0 cyfrowy, 1 niski, 2 dzwonek, 3 elektroniczny
     static final String VIBRATE = "vibrate";
     static final String NIGHT = "night";         // cisza nocna
     static final String NIGHT_FROM = "night_from";
@@ -23,6 +24,7 @@ final class Prefs {
     static boolean enabled(Context c) { return get(c).getBoolean(ENABLED, true); }
     static boolean doubleBeep(Context c) { return get(c).getBoolean(DOUBLE, true); }
     static int volume(Context c) { return get(c).getInt(VOLUME, 1); }
+    static int tone(Context c) { return get(c).getInt(TONE, 0); }
     static boolean vibrate(Context c) { return get(c).getBoolean(VIBRATE, false); }
     static boolean night(Context c) { return get(c).getBoolean(NIGHT, true); }
     static int nightFrom(Context c) { return get(c).getInt(NIGHT_FROM, 23); }

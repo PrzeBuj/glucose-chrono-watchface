@@ -66,6 +66,11 @@ public class MainActivity extends Activity {
         toggle("Włączony", Prefs.ENABLED, Prefs.enabled(this));
         cycle(new String[]{"Pojedynczy: piik", "Podwójny: piik-piik"}, Prefs.doubleBeep(this) ? 1 : 0,
                 i -> Prefs.get(this).edit().putBoolean(Prefs.DOUBLE, i == 1).apply());
+        cycle(new String[]{"Ton: cyfrowy", "Ton: niski", "Ton: dzwonek", "Ton: elektroniczny"}, Prefs.tone(this),
+                i -> {
+                    Prefs.get(this).edit().putInt(Prefs.TONE, i).apply();
+                    new Thread(() -> Beeper.play(this, Prefs.doubleBeep(this), Prefs.volume(this), false, i)).start();
+                });
         cycle(new String[]{"Głośność: cicho", "Głośność: średnio", "Głośność: głośno"}, Prefs.volume(this),
                 i -> Prefs.get(this).edit().putInt(Prefs.VOLUME, i).apply());
         toggle("Też wibracja", Prefs.VIBRATE, Prefs.vibrate(this));
