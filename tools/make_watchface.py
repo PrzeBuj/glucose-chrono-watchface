@@ -17,7 +17,7 @@ from pathlib import Path
 OUT = Path(__file__).resolve().parent.parent / "watchface/src/main/res/raw/watchface.xml"
 C = 225
 
-WHITE = "#FFF4F5F7"
+WHITE = "#FFE8F0F4"
 BLACK = "#FF000000"
 GREY = "#FF8D97A3"
 LIGHT = "#FFC3C8CF"
@@ -182,7 +182,7 @@ def graph_slot():
     def b(res):
         return (f'<PartDraw x="0" y="0" width="{w}" height="{h}">'
                 f'<RoundRectangle x="0" y="0" width="{w}" height="{h}" cornerRadiusX="8" cornerRadiusY="8">'
-                f'<Fill color="#FF10151B"/></RoundRectangle></PartDraw>'
+                f'<Fill color="#FF262F36"/></RoundRectangle></PartDraw>'
                 + image(2, 2, w - 4, h - 4, res))
     return slot(2, "slot_graph", 137, 388, w, h, ["PHOTO_IMAGE", "SMALL_IMAGE"],
                 f'<BoundingRoundBox x="0" y="0" width="{w}" height="{h}" cornerRadius="8"/>',
@@ -195,16 +195,17 @@ def hands():
     # rozmiary i punkty obrotu z tools/make_assets_v3.py
     return (
         '<AnalogClock x="0" y="0" width="450" height="450">'
-        f'<HourHand resource="hand_hour_o" x="{C - 8}" y="{C - 112}" width="16" height="126" pivotX="0.5" pivotY="0.8889"/>'
-        f'<MinuteHand resource="hand_minute_o" x="{C - 7}" y="{C - 178}" width="14" height="194" pivotX="0.5" pivotY="0.9175"/>'
+        f'<HourHand resource="hand_hour_o" x="{C - 14}" y="{C - 118}" width="28" height="138" pivotX="0.5" pivotY="0.8551"/>'
+        f'<MinuteHand resource="hand_minute_o" x="{C - 13}" y="{C - 184}" width="26" height="206" pivotX="0.5" pivotY="0.8932"/>'
         "</AnalogClock>"
         '<AnalogClock x="0" y="0" width="450" height="450">'
         f'<SecondHand resource="hand_second_o" x="{C - 4}" y="{C - 196}" width="8" height="232" pivotX="0.5" pivotY="0.8448" tintColor="{HAND}">'
         '<Sweep frequency="15"/></SecondHand>'
         '<Variant mode="AMBIENT" target="alpha" value="0"/></AnalogClock>'
         '<PartDraw x="0" y="0" width="450" height="450">'
-        f'<Ellipse x="{C - 9}" y="{C - 9}" width="18" height="18"><Fill color="{HAND}"/></Ellipse>'
-        f'<Ellipse x="{C - 4}" y="{C - 4}" width="8" height="8"><Fill color="#FF1A1F26"/></Ellipse>'
+        f'<Ellipse x="{C - 12}" y="{C - 12}" width="24" height="24"><Fill color="#FFB4BAC0"/></Ellipse>'
+        f'<Ellipse x="{C - 8}" y="{C - 8}" width="16" height="16"><Fill color="{HAND}"/></Ellipse>'
+        f'<Ellipse x="{C - 3}" y="{C - 3}" width="6" height="6"><Fill color="#FF3A0C0C"/></Ellipse>'
         "</PartDraw>"
     )
 

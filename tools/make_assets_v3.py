@@ -25,83 +25,122 @@ def u(v):
     return int(round(v * X * SS))
 
 
+def lerp(c1, c2, t):
+    return tuple(int(c1[k] + (c2[k] - c1[k]) * t) for k in range(len(c1)))
+
+
+def panel_layer(size, draw_shape, top, bottom, edge, y0, y1):
+    """Panel z pionowym gradientem (jaśniejszy u góry), krawędzią i cieniem."""
+    mask = Image.new("L", size, 0)
+    draw_shape(ImageDraw.Draw(mask), 255)
+    grad = Image.new("RGBA", size, (0, 0, 0, 0))
+    gd = ImageDraw.Draw(grad)
+    for yy in range(u(y0), u(y1) + 1, 2):
+        t = (yy - u(y0)) / max(1, u(y1) - u(y0))
+        gd.line([(0, yy), (size[0], yy)], fill=lerp(top, bottom, min(1, t)) + (255,), width=2)
+    layer = Image.new("RGBA", size, (0, 0, 0, 0))
+    layer.paste(grad, (0, 0), mask)
+    # krawędź: jaśniejsza u góry, ciemniejsza na dole
+    rim = Image.new("L", size, 0)
+    draw_shape(ImageDraw.Draw(rim), 255, outline=True)
+    rim_col = Image.new("RGBA", size, (0, 0, 0, 0))
+    rd = ImageDraw.Draw(rim_col)
+    for yy in range(u(y0) - u(4), u(y1) + 1, 2):
+        t = (yy - u(y0)) / max(1, u(y1) - u(y0))
+        rd.line([(0, yy), (size[0], yy)], fill=lerp(edge, (40, 48, 55, 255), max(0, min(1, t * 1.6))), width=2)
+    layer.paste(rim_col, (0, 0), rim)
+    shadow = Image.new("RGBA", size, (0, 0, 0, 0))
+    shadow.putalpha(mask.filter(ImageFilter.GaussianBlur(u(6))).point(lambda p: int(p * 0.85)))
+    return shadow, layer
+
+
 def background():
-    img = Image.new("RGBA", (u(N), u(N)), (12, 15, 19, 255))
-    d = ImageDraw.Draw(img)
-    # delikatna poświata w środku
-    glow = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    gd = ImageDraw.Draw(glow)
-    for i in range(30):
-        r = u(225) * (1 - i / 30)
-        a = int(2 + i * 0.9)
-        gd.ellipse([u(225) - r, u(225) - r, u(225) + r, u(225) + r], fill=(40, 52, 66, a))
-    img = Image.alpha_composite(img, glow)
-    # heksagonalna siatka
-    hexl = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    size = (u(N), u(N))
+    img = Image.new("RGBA", size, (10, 13, 16, 255))
+    # plaster miodu: ciemne komórki, jaśniejsze grafitowe ścianki
+    hexl = Image.new("RGBA", size, (52, 59, 66, 255))
     hd = ImageDraw.Draw(hexl)
-    r = 7.0
+    r = 8.5
     w = math.sqrt(3) * r
     row = 0
     y = -r
     while y < N + r:
         x = (w / 2 if row % 2 else 0) - w
         while x < N + w:
-            pts = [(u(x + r * 0.92 * math.cos(math.radians(60 * k + 30))), u(y + r * 0.92 * math.sin(math.radians(60 * k + 30)))) for k in range(6)]
-            hd.polygon(pts, fill=(18, 22, 28, 255), outline=(40, 49, 60, 255))
+            pts = [(u(x + r * 0.84 * math.cos(math.radians(60 * k + 30))), u(y + r * 0.84 * math.sin(math.radians(60 * k + 30)))) for k in range(6)]
+            hd.polygon(pts, fill=(17, 20, 23, 255))
+            # lekki połysk górnej krawędzi komórki
+            hd.line([pts[4], pts[5]], fill=(70, 79, 88, 255), width=u(0.6))
             x += w
         y += r * 1.5
         row += 1
-    # siatka mocniejsza w środku, zanika ku brzegom
-    mask = Image.new("L", img.size, 0)
-    md = ImageDraw.Draw(mask)
-    for i in range(40):
-        rr = u(225) * (1 - i / 40)
-        md.ellipse([u(225) - rr, u(225) - rr, u(225) + rr, u(225) + rr], fill=int(110 + i * 3.6))
-    hexl.putalpha(Image.composite(hexl.getchannel("A"), Image.new("L", img.size, 0), mask).point(lambda p: p))
-    img = Image.alpha_composite(img, hexl)
+    # siatka wyraźna w środku, ciemnieje ku brzegom (jak światło na tarczy)
+    shade = Image.new("L", size, 0)
+    sd = ImageDraw.Draw(shade)
+    for k in range(50):
+        rr = u(225) * (1 - k / 50)
+        sd.ellipse([u(225) - rr, u(225) - rr, u(225) + rr, u(225) + rr], fill=int(120 + k * 2.7))
+    img.paste(hexl, (0, 0), shade)
 
-    # panele (jak szkło na tarczy)
-    pan = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    pd = ImageDraw.Draw(pan)
-    fill = (26, 32, 40, 215)
-    edge = (58, 68, 80, 255)
-    lw = int(u(1.4))
-    pd.rounded_rectangle([u(92), u(46), u(358), u(162)], radius=u(34), fill=fill, outline=edge, width=lw)
-    for cx in (108, 342):
-        pd.ellipse([u(cx - 62), u(226 - 62), u(cx + 62), u(226 + 62)], fill=fill, outline=edge, width=lw)
-    pd.rounded_rectangle([u(58), u(296), u(392), u(480)], radius=u(40), fill=fill, outline=edge, width=lw)
-    shadow = pan.filter(ImageFilter.GaussianBlur(u(5)))
-    sh = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    sh.putalpha(shadow.getchannel("A").point(lambda p: int(p * 0.7)))
-    img = Image.alpha_composite(img, sh)
-    img = Image.alpha_composite(img, pan)
-    # górna krawędź paneli lekko jaśniejsza
-    hl = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    ld = ImageDraw.Draw(hl)
-    ld.arc([u(92), u(46), u(358), u(162)], 0, 0, fill=(0, 0, 0, 0))
-    img = Image.alpha_composite(img, hl)
-    # przycięcie do koła
-    circ = Image.new("L", img.size, 0)
+    top, bottom, edge = (70, 83, 92), (36, 45, 51), (118, 132, 142, 255)
+    shapes = [
+        (lambda d, c, outline=False: d.rounded_rectangle([u(92), u(46), u(358), u(162)], radius=u(34), fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 46, 162),
+        (lambda d, c, outline=False: d.ellipse([u(46), u(164), u(170), u(288)], fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 164, 288),
+        (lambda d, c, outline=False: d.ellipse([u(280), u(164), u(404), u(288)], fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 164, 288),
+        (lambda d, c, outline=False: d.rounded_rectangle([u(58), u(296), u(392), u(480)], radius=u(40), fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 296, 450),
+    ]
+    for shape, y0, y1 in shapes:
+        sh, layer = panel_layer(size, shape, top, bottom, edge, y0, y1)
+        img = Image.alpha_composite(img, sh)
+        img = Image.alpha_composite(img, layer)
+
+    # pierścień skali: ciemniejszy, z delikatną poświatą podziałek
+    ring = Image.new("RGBA", size, (0, 0, 0, 0))
+    rd = ImageDraw.Draw(ring)
+    rd.ellipse([0, 0, u(N), u(N)], outline=(6, 9, 12, 235), width=u(26))
+    img = Image.alpha_composite(img, ring)
+    glow = Image.new("RGBA", size, (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    for k in range(60):
+        a = math.radians(k * 6)
+        r1 = 204 if k % 5 == 0 else 212
+        col = (255, 138, 61, 255) if k % 15 == 0 else (85, 200, 242, 255)
+        gd.line([(u(225 + r1 * math.sin(a)), u(225 - r1 * math.cos(a))), (u(225 + 220 * math.sin(a)), u(225 - 220 * math.cos(a)))], fill=col, width=u(5))
+    glow = glow.filter(ImageFilter.GaussianBlur(u(4)))
+    glow.putalpha(glow.getchannel("A").point(lambda p: int(p * 0.55)))
+    img = Image.alpha_composite(img, glow)
+
+    circ = Image.new("L", size, 0)
     ImageDraw.Draw(circ).ellipse([0, 0, u(N) - 1, u(N) - 1], fill=255)
-    out = Image.new("RGBA", img.size, (0, 0, 0, 255))
+    out = Image.new("RGBA", size, (0, 0, 0, 255))
     out.paste(img, (0, 0), circ)
-    save(out.convert("RGB").convert("RGBA"), N, N, "bg_sport.png")
+    save(out, N, N, "bg_sport.png")
 
 
-def outlined_hand(name, w, length, tail, color, fill=(22, 27, 34, 235)):
-    """Wskazówka konturowa ze spiczastym końcem; oś obrotu w punkcie (w/2, length)."""
-    h = length + tail
-    img = big(w, h)
-    d = ImageDraw.Draw(img)
-    c = w / 2
-    pts = [(c, 0), (w - 1, w * 0.9), (w - 1, h - 4), (c, h), (1, h - 4), (1, w * 0.9)]
+def outlined_hand(name, w, length, tail, color, pad=6):
+    """Neonowa wskazówka konturowa: pusty środek (widać tło), jasny kontur z poświatą.
+    Obraz ma margines `pad` na poświatę; oś obrotu w punkcie (szerokość/2, pad + length)."""
+    W, H = w + 2 * pad, length + tail + 2 * pad
+    img = big(W, H)
+    c = W / 2
+    pts = [(c, pad), (pad + w - 1, pad + w * 0.9), (pad + w - 1, pad + length + tail - 4),
+           (c, pad + length + tail), (pad + 1, pad + length + tail - 4), (pad + 1, pad + w * 0.9)]
     pts = [(u(x), u(y)) for x, y in pts]
-    d.polygon(pts, fill=fill)
-    d.line(pts + [pts[0]], fill=color, width=int(u(2.4)), joint="curve")
-    # środkowa jasna kreska w części końcowej
-    d.rounded_rectangle([u(c - 1.1), u(w * 1.4), u(c + 1.1), u(length * 0.62)], radius=u(1.1), fill=color[:3] + (200,))
-    save(img, w, h, name)
-    return h, length / h
+    core = big(W, H)
+    cd = ImageDraw.Draw(core)
+    cd.polygon(pts, fill=(14, 18, 22, 110))
+    cd.line(pts + [pts[0]], fill=color, width=u(2.6), joint="curve")
+    glow = big(W, H)
+    ImageDraw.Draw(glow).line(pts + [pts[0]], fill=color, width=u(5))
+    glow = glow.filter(ImageFilter.GaussianBlur(u(2.6)))
+    img = Image.alpha_composite(img, glow)
+    img = Image.alpha_composite(img, core)
+    # biały środek konturu (efekt neonu)
+    hi = big(W, H)
+    ImageDraw.Draw(hi).line(pts + [pts[0]], fill=(255, 255, 255, 170), width=u(0.9), joint="curve")
+    img = Image.alpha_composite(img, hi)
+    save(img, W, H, name)
+    return W, H, round((pad + length) / H, 4)
 
 
 def second_hand(name, length, tail):
@@ -119,6 +158,6 @@ def second_hand(name, length, tail):
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     background()
-    print("hour", outlined_hand("hand_hour_o.png", 16, 112, 14, (244, 245, 247, 255)))
-    print("minute", outlined_hand("hand_minute_o.png", 14, 178, 16, (255, 138, 61, 255)))
+    print("hour", outlined_hand("hand_hour_o.png", 16, 112, 14, (225, 240, 250, 255)))
+    print("minute", outlined_hand("hand_minute_o.png", 14, 178, 16, (255, 118, 58, 255)))
     print("second", second_hand("hand_second_o.png", 196, 36))

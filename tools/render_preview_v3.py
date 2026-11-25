@@ -7,7 +7,7 @@ R = Path(__file__).resolve().parent.parent / "watchface/src/main/res/drawable-no
 S = 2
 B = "/usr/share/fonts/opentype/inter/Inter-Bold.otf"
 M = "/usr/share/fonts/opentype/inter/Inter-Medium.otf"
-ACC, ORA, WHITE, GREY, GREEN, RED = (85, 200, 242), (255, 138, 61), (244, 245, 247), (141, 151, 163), (52, 216, 106), (255, 59, 59)
+ACC, ORA, WHITE, GREY, GREEN, RED = (85, 200, 242), (255, 138, 61), (232, 240, 244), (141, 151, 163), (52, 216, 106), (255, 59, 59)
 
 
 def font(p, size):
@@ -54,7 +54,7 @@ def main(out):
     t(232, 364, 110, 20, "+3  2 min", 15, (195, 200, 207), align="l")
     # wykres
     gx, gy, gw, gh = 137 * S, 388 * S, 176 * S, 42 * S
-    d.rounded_rectangle([gx, gy, gx + gw, gy + gh], radius=8 * S, fill=(16, 21, 27))
+    d.rounded_rectangle([gx, gy, gx + gw, gy + gh], radius=8 * S, fill=(38, 47, 54))
     d.rectangle([gx + 4 * S, gy + 12 * S, gx + gw - 4 * S, gy + 32 * S], fill=(22, 90, 45))
     pts = [(gx + (6 + k * 6) * S, gy + (28 - 10 * math.sin(k / 4) - k * 0.25) * S) for k in range(28)]
     for p in pts:
@@ -69,12 +69,13 @@ def main(out):
         pad.paste(hi, (0, 0))
         rot = pad.rotate(-ang, resample=Image.BICUBIC, expand=True)
         img.alpha_composite(rot, (int(C - rot.width / 2), int(C - rot.height / 2)))
-    hand("hand_hour_o.png", 16, 126, 0.8889, (10 + 9 / 60) * 30)
-    hand("hand_minute_o.png", 14, 194, 0.9175, 9.37 * 6)
+    hand("hand_hour_o.png", 28, 138, 0.8551, (10 + 9 / 60) * 30)
+    hand("hand_minute_o.png", 26, 206, 0.8932, 9.37 * 6)
     hand("hand_second_o.png", 8, 232, 0.8448, 22 * 6, RED)
     d = ImageDraw.Draw(img)
-    d.ellipse([C - 9 * S, C - 9 * S, C + 9 * S, C + 9 * S], fill=RED)
-    d.ellipse([C - 4 * S, C - 4 * S, C + 4 * S, C + 4 * S], fill=(26, 31, 38))
+    d.ellipse([C - 12 * S, C - 12 * S, C + 12 * S, C + 12 * S], fill=(180, 186, 192))
+    d.ellipse([C - 8 * S, C - 8 * S, C + 8 * S, C + 8 * S], fill=RED)
+    d.ellipse([C - 3 * S, C - 3 * S, C + 3 * S, C + 3 * S], fill=(58, 12, 12))
     circ = Image.new("L", img.size, 0)
     ImageDraw.Draw(circ).ellipse([0, 0, img.width - 1, img.height - 1], fill=255)
     outimg = Image.new("RGBA", img.size, (0, 0, 0, 0))
