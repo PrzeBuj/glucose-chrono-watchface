@@ -163,7 +163,7 @@ def classic():
 
 if __name__ == "__main__":
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else None
-    sport1 = lambda: sport("bg_sport1.png", old=True)
+    sport1 = lambda: sport("bg_sport1.png")
     for name, fn in (("sport", sport), ("sport1", sport1), ("chrono", chrono), ("classic", classic)):
         img = fn()
         img.resize((160, 160), Image.LANCZOS).save(R / f"style_{name}.png")
