@@ -8,6 +8,12 @@ import android.content.Intent;
 public class RescheduleReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Scheduler.schedule(context.getApplicationContext());
+        Context c = context.getApplicationContext();
+        String a = String.valueOf(intent.getAction());
+        String why = a.endsWith("BOOT_COMPLETED") ? "restart zegarka"
+                : a.endsWith("MY_PACKAGE_REPLACED") ? "aktualizacja aplikacji"
+                : a.endsWith("TIME_SET") || a.endsWith("TIMEZONE_CHANGED") ? "zmiana czasu" : "zmiana uprawnień";
+        Prefs.log(c, "ustawiony ponownie (" + why + ")");
+        Scheduler.schedule(c);
     }
 }

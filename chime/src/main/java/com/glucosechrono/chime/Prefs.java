@@ -35,7 +35,12 @@ final class Prefs {
 
     static void log(Context c, String text) {
         String t = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.ROOT).format(new java.util.Date());
-        get(c).edit().putString(LAST, t + " " + text).apply();
+        // ostatnie 6 zdarzeń, najnowsze na górze
+        String prev = get(c).getString(LAST, "");
+        String[] lines = prev.isEmpty() ? new String[0] : prev.split("\n");
+        StringBuilder sb = new StringBuilder(t + " " + text);
+        for (int k = 0; k < Math.min(5, lines.length); k++) sb.append('\n').append(lines[k]);
+        get(c).edit().putString(LAST, sb.toString()).commit();
     }
 
     /** Czy o tej godzinie (0-23) obowiązuje cisza nocna. */

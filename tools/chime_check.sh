@@ -12,9 +12,9 @@ adb shell am start -W -n $P/.MainActivity
 sleep 6
 adb shell input keyevent KEYCODE_HOME
 echo "== ALARM po otwarciu"; adb shell dumpsys alarm | grep -B2 -A6 "$P" | head -30
-for round in 1 2; do
+for round in 1; do
   H=$(adb shell date +%H | tr -d '\r'); D=$(adb shell date +%m%d | tr -d '\r'); Y=$(adb shell date +%Y | tr -d '\r')
-  adb shell date "$D$H"59"$Y.40"
+  adb shell date "$D"1159"$Y.40"
   echo "== zegar: $(adb shell date)"
   sleep 3
   echo "== ALARM po zmianie czasu"; adb shell dumpsys alarm | grep -A4 "$P" | head -12
