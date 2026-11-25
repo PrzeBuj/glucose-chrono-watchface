@@ -1,4 +1,7 @@
-"""Generuje watchface/src/main/res/raw/watchface.xml (Watch Face Format v2), wygląd „Glukoza Sport”.
+"""Generuje watchface/src/main/res/raw/watchface.xml (Watch Face Format v2): jedna tarcza, trzy style.
+
+Style (Edytuj › Styl): Sport, Chronograf, Klasyczny. Pola z GlucoDataHandler są wspólne dla wszystkich stylów
+(te same miejsca), każdy styl ma własne tło, dodatki i wskazówki.
 
 Uruchom: python3 tools/make_assets_v3.py && python3 tools/make_watchface.py
 Układ 450x450. Poprzedni wygląd (chronograf MAX) jest w tools/legacy_racing_max.py.
@@ -191,18 +194,15 @@ def graph_slot():
 
 # ------------------------------------------------------------------ wskazówki
 
-def hands():
+def sport_hands():
     # rozmiary i punkty obrotu z tools/make_assets_v3.py
     return (
         '<AnalogClock x="0" y="0" width="450" height="450">'
         f'<HourHand resource="hand_hour_o" x="{C - 14}" y="{C - 118}" width="28" height="138" pivotX="0.5" pivotY="0.8551"/>'
         f'<MinuteHand resource="hand_minute_o" x="{C - 13}" y="{C - 184}" width="26" height="206" pivotX="0.5" pivotY="0.8932"/>'
         "</AnalogClock>"
-        '<AnalogClock x="0" y="0" width="450" height="450">'
-        f'<SecondHand resource="hand_second_o" x="{C - 4}" y="{C - 196}" width="8" height="232" pivotX="0.5" pivotY="0.8448" tintColor="{HAND}">'
-        '<Sweep frequency="15"/></SecondHand>'
-        '<Variant mode="AMBIENT" target="alpha" value="0"/></AnalogClock>'
-        '<PartDraw x="0" y="0" width="450" height="450">'
+        + second_hand()
+        + '<PartDraw x="0" y="0" width="450" height="450">'
         f'<Ellipse x="{C - 12}" y="{C - 12}" width="24" height="24"><Fill color="#FFB4BAC0"/></Ellipse>'
         f'<Ellipse x="{C - 8}" y="{C - 8}" width="16" height="16"><Fill color="{HAND}"/></Ellipse>'
         f'<Ellipse x="{C - 3}" y="{C - 3}" width="6" height="6"><Fill color="#FF3A0C0C"/></Ellipse>'
@@ -210,14 +210,151 @@ def hands():
     )
 
 
+def second_hand():
+    return (
+        '<AnalogClock x="0" y="0" width="450" height="450">'
+        f'<SecondHand resource="hand_second_o" x="{C - 4}" y="{C - 196}" width="8" height="232" pivotX="0.5" pivotY="0.8448" tintColor="{HAND}">'
+        '<Sweep frequency="15"/></SecondHand>'
+        '<Variant mode="AMBIENT" target="alpha" value="0"/></AnalogClock>'
+    )
+
+
+def group(name, inner):
+    return f'<Group name="{name}" x="0" y="0" width="450" height="450">{inner}</Group>'
+
+
+# ------------------------------------------------------------------ styl: Sport
+
+def sport_back():
+    return background() + ticks() + top() + weather()
+
+
+# ------------------------------------------------------------------ styl: Chronograf (poprzedni wygląd)
+
+SUB = "#FF1A1D22"
+TICK = "#FF7D838C"
+DIAL = "[CONFIGURATION.dial.0]"
+DIALS = [("dial_graphite", "#FF101215"), ("dial_black", "#FF000000"), ("dial_navy", "#FF0E1A2E"), ("dial_green", "#FF0F1E17")]
+WID = ((108, 226), (342, 226))
+
+
+def chrono_back():
+    gears = (
+        '<BooleanConfiguration id="gears"><BooleanOption id="TRUE"><Group name="gears" x="0" y="0" width="450" height="450">'
+        '<PartImage x="78" y="78" width="294" height="294" pivotX="0.5" pivotY="0.5"><Image resource="gear_big"/>'
+        '<Transform target="angle" value="([SECONDS_IN_DAY] % 60) * 6"/></PartImage>'
+        + "".join(
+            f'<PartImage x="{cx - 64}" y="{cy - 64}" width="128" height="128" pivotX="0.5" pivotY="0.5"><Image resource="gear_small"/>'
+            '<Transform target="angle" value="360 - ([SECONDS_IN_DAY] % 26) * 13.846"/></PartImage>' for cx, cy in WID)
+        + '<Variant mode="AMBIENT" target="alpha" value="0"/></Group></BooleanOption></BooleanConfiguration>'
+    )
+    d = [f'<Rectangle x="0" y="0" width="450" height="450"><Fill color="{DIAL}"/></Rectangle>']
+    draw = [f'<Arc centerX="{C}" centerY="{C}" width="429" height="429" startAngle="0" endAngle="360"><Stroke color="{BLACK}" thickness="21"/></Arc>']
+    for k in range(300):
+        draw.append(line(k * 1.2, 216, 223, TICK, 0.8))
+    for k in range(60):
+        draw.append(line(k * 6, 213, 223, WHITE, 1.5))
+    for a in (30, 60, 120, 240, 300, 330):
+        draw.append(line(a, 159, 181, WHITE, 6, "ROUND"))
+    for dx in (-7, 7):
+        draw.append(f'<Line startX="{C + dx}" startY="39" endX="{C + dx}" endY="60"><Stroke color="{WHITE}" thickness="7.7" cap="ROUND"/></Line>')
+    for cx, cy in WID:
+        draw.append(f'<Ellipse x="{cx - 60}" y="{cy - 60}" width="120" height="120"><Fill color="{SUB}"/><Stroke color="{WHITE}" thickness="2.4"/></Ellipse>')
+    draw.append(f'<RoundRectangle x="155" y="64" width="141" height="54" cornerRadiusX="10" cornerRadiusY="10"><Fill color="{BLACK}"/><Stroke color="{WHITE}" thickness="1.9"/></RoundRectangle>')
+    # prawa tarczka: bateria zegarka (pole po lewej to komplikacja)
+    cx, cy = WID[1]
+    draw.append(f'<Arc centerX="{cx}" centerY="{cy}" width="110" height="110" startAngle="0" endAngle="360"><Stroke color="{TRACK}" thickness="7"/></Arc>')
+    draw.append(f'<Arc centerX="{cx}" centerY="{cy}" width="110" height="110" startAngle="0" endAngle="0"><Stroke color="{ACCENT}" thickness="7" cap="ROUND"/>'
+                '<Transform target="endAngle" value="[BATTERY_PERCENT] * 3.6"/></Arc>')
+    out = ('<PartDraw x="0" y="0" width="450" height="450">' + "".join(d) + "</PartDraw>" + gears
+           + '<PartDraw x="0" y="0" width="450" height="450">' + "".join(draw) + "</PartDraw>")
+    for n in (5, 10, 15, 20, 40, 45, 50, 55):
+        x, y = polar(n * 6, 190)
+        out += text(x - 15, y - 11, 30, 22, f"{n:02d}", 14, WHITE)
+    out += text(cx - 50, cy - 22, 100, 36, "%s%%", 28, WHITE, params=("[BATTERY_PERCENT]",))
+    out += text(cx - 40, cy + 14, 80, 20, "BAT", 13, GREY, weight="NORMAL")
+    out += ('<DigitalClock x="155" y="66" width="141" height="50">'
+            '<TimeText format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER" x="0" y="0" width="141" height="50">'
+            f'<Font family="SYNC_TO_DEVICE" size="40" weight="BOLD" color="{WHITE}"/></TimeText></DigitalClock>')
+    temp_ok = text(130, 124, 80, 22, "%s°", 16, LIGHT, align="END", params=("[WEATHER.TEMPERATURE]",))
+    temp_na = text(130, 124, 80, 22, "--°", 16, LIGHT, align="END")
+    out += ("<Condition><Expressions><Expression name=\"weather\"><![CDATA[[WEATHER.IS_AVAILABLE]]]></Expression></Expressions>"
+            f'<Compare expression="weather">{temp_ok}</Compare><Default>{temp_na}</Default></Condition>')
+    out += image(226, 129, 14, 14, "ic_heart", HAND) + text(243, 124, 60, 22, "%s", 16, LIGHT, align="START", params=("round([HEART_RATE])",))
+    return out
+
+
+def chrono_hands():
+    return (
+        '<AnalogClock x="0" y="0" width="450" height="450">'
+        '<HourHand resource="hand_hour" x="219" y="124" width="12" height="118" pivotX="0.5" pivotY="0.8559"/>'
+        '<MinuteHand resource="hand_minute" x="220" y="46" width="10" height="201" pivotX="0.5" pivotY="0.8905"/>'
+        "</AnalogClock>"
+        '<AnalogClock x="0" y="0" width="450" height="450">'
+        f'<SecondHand resource="hand_second" x="220" y="29" width="10" height="249" pivotX="0.5" pivotY="0.7871" tintColor="{HAND}">'
+        '<Sweep frequency="15"/></SecondHand><Variant mode="AMBIENT" target="alpha" value="0"/></AnalogClock>'
+        f'<PartDraw x="0" y="0" width="450" height="450"><Ellipse x="{C - 7}" y="{C - 7}" width="15" height="15"><Fill color="{HAND}"/></Ellipse>'
+        f'<Ellipse x="{C - 3}" y="{C - 3}" width="6" height="6"><Fill color="{BLACK}"/></Ellipse></PartDraw>'
+    )
+
+
+# ------------------------------------------------------------------ styl: Klasyczny (włókno węglowe, metal, luma)
+
+def classic_back():
+    out = image(0, 0, 450, 450, "bg_classic", extra='<Variant mode="AMBIENT" target="alpha" value="0"/>')
+    out += image(184, 72, 18, 14, "ic_battery", LIGHT) + text(205, 68, 60, 22, "%s%%", 15, LIGHT, align="START", params=("[BATTERY_PERCENT]",))
+    out += text(140, 88, 170, 22, "%s %s", 17, LIGHT, weight="NORMAL", params=("[DAY_OF_WEEK_S]", "[DAY]"))
+    out += ('<DigitalClock x="110" y="106" width="230" height="58">'
+            '<TimeText format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER" x="0" y="0" width="230" height="58">'
+            f'<Font family="SYNC_TO_DEVICE" size="54" weight="NORMAL" color="{WHITE}"/></TimeText></DigitalClock>')
+    cx, cy = WID[1]
+    ok = text(cx - 52, cy - 18, 104, 38, "%s°C", 28, WHITE, weight="NORMAL", params=("[WEATHER.TEMPERATURE]",))
+    na = text(cx - 52, cy - 18, 104, 38, "--°C", 28, WHITE, weight="NORMAL")
+    out += ("<Condition><Expressions><Expression name=\"weather\"><![CDATA[[WEATHER.IS_AVAILABLE]]]></Expression></Expressions>"
+            f'<Compare expression="weather">{ok}</Compare><Default>{na}</Default></Condition>')
+    out += text(cx - 40, cy - 40, 80, 20, "POGODA", 12, GREY, weight="NORMAL")
+    return out
+
+
+def classic_hands():
+    return (
+        '<AnalogClock x="0" y="0" width="450" height="450">'
+        f'<HourHand resource="hand_hour_c" x="{C - 7}" y="{C - 108}" width="14" height="126" pivotX="0.5" pivotY="0.8571"/>'
+        f'<MinuteHand resource="hand_minute_c" x="{C - 6}" y="{C - 168}" width="12" height="188" pivotX="0.5" pivotY="0.8936"/>'
+        "</AnalogClock>"
+        + second_hand()
+        + '<PartDraw x="0" y="0" width="450" height="450">'
+        f'<Ellipse x="{C - 9}" y="{C - 9}" width="18" height="18"><Fill color="#FFC8CDD2"/></Ellipse>'
+        f'<Ellipse x="{C - 5}" y="{C - 5}" width="10" height="10"><Fill color="{HAND}"/></Ellipse>'
+        "</PartDraw>"
+    )
+
+
+STYLES = [("sport", "style_sport", sport_back, sport_hands),
+          ("chrono", "style_chrono", chrono_back, chrono_hands),
+          ("classic", "style_classic", classic_back, classic_hands)]
+
+
+def by_style(part):
+    opts = "".join(f'<ListOption id="{sid}">{group(sid + "_" + part, (back if part == "back" else hands)())}</ListOption>'
+                   for sid, _, back, hands in STYLES)
+    return f'<ListConfiguration id="style">{opts}</ListConfiguration>'
+
+
 def user_configurations():
+    styles = "".join(f'<ListOption id="{sid}" displayName="@string/{name}" icon="{"style_" + sid}"/>' for sid, name, _, _ in STYLES)
     opts = "".join(f'<ColorOption id="{k}" displayName="@string/{n}" colors="{a} {h}"/>' for k, (n, a, h) in enumerate(THEMES))
-    return f'<UserConfigurations><ColorConfiguration id="theme" displayName="@string/cfg_theme" defaultValue="0">{opts}</ColorConfiguration></UserConfigurations>'
+    dials = "".join(f'<ColorOption id="{k}" displayName="@string/{n}" colors="{c}"/>' for k, (n, c) in enumerate(DIALS))
+    return ("<UserConfigurations>"
+            f'<ListConfiguration id="style" displayName="@string/cfg_style" defaultValue="sport">{styles}</ListConfiguration>'
+            f'<ColorConfiguration id="theme" displayName="@string/cfg_theme" defaultValue="0">{opts}</ColorConfiguration>'
+            f'<ColorConfiguration id="dial" displayName="@string/cfg_dial" defaultValue="0">{dials}</ColorConfiguration>'
+            '<BooleanConfiguration id="gears" displayName="@string/cfg_gears" defaultValue="TRUE"/>'
+            "</UserConfigurations>")
 
 
 def build():
-    body = (background() + ticks() + top() + left_slot() + weather()
-            + glucose_slot() + unit_and_delta() + graph_slot() + hands())
+    body = (by_style("back") + left_slot() + glucose_slot() + unit_and_delta() + graph_slot() + by_style("hands"))
     return ('<?xml version="1.0" encoding="utf-8"?>\n<WatchFace width="450" height="450">\n'
             '<Metadata key="CLOCK_TYPE" value="ANALOG"/>\n<Metadata key="PREVIEW_TIME" value="10:09:22"/>\n'
             f"{user_configurations()}\n<Scene backgroundColor=\"#FF000000\">\n{body}\n</Scene>\n</WatchFace>\n")

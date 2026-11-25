@@ -7,9 +7,13 @@
     <string name="slot_left">Lewa tarczka</string>
     <string name="slot_right">Prawa tarczka</string>
     <string name="slot_bottom">Pole pod wykresem</string>
+    <string name="cfg_style">Styl</string>
+    <string name="style_sport">Sport</string>
+    <string name="style_chrono">Chronograf</string>
+    <string name="style_classic">Klasyczny</string>
     <string name="cfg_theme">Kolory</string>
-    <string name="cfg_dial">Tło tarczy</string>
-    <string name="cfg_gears">Mechanizm w tle</string>
+    <string name="cfg_dial">Tło (Chronograf)</string>
+    <string name="cfg_gears">Mechanizm (Chronograf)</string>
     <string name="theme_blue">Niebieski i czerwony</string>
     <string name="theme_teal">Turkus i pomarańcz</string>
     <string name="theme_purple">Fiolet i żółty</string>
