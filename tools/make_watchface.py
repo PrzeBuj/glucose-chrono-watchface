@@ -82,9 +82,9 @@ def slot(sid, name, x, y, w, h, types, bounding, bodies, default=("EMPTY", None)
 
 # ------------------------------------------------------------------ tło, podziałki
 
-def background():
+def background(res="bg_sport"):
     # tło z panelami (PNG); w trybie Always-On ukryte, zostaje czerń
-    return image(0, 0, 450, 450, "bg_sport", extra='<Variant mode="AMBIENT" target="alpha" value="0"/>')
+    return image(0, 0, 450, 450, res, extra='<Variant mode="AMBIENT" target="alpha" value="0"/>')
 
 
 def ticks():
@@ -162,34 +162,65 @@ def weather():
 
 # ------------------------------------------------------------------ dół: glukoza, delta, wykres
 
+def per_style(w, h, variants):
+    """Ta sama treść pola w innym miejscu zależnie od stylu (pola muszą być wspólne dla wszystkich stylów).
+    variants: {id stylu: xml}, brakujące style biorą variants["*"]."""
+    opts = "".join(
+        f'<ListOption id="{sid}"><Group name="{sid}_v" x="0" y="0" width="{w}" height="{h}">{variants.get(sid, variants["*"])}</Group></ListOption>'
+        for sid, *_ in STYLES)
+    return f'<Group name="ps" x="0" y="0" width="{w}" height="{h}"><ListConfiguration id="style">{opts}</ListConfiguration></Group>'
+
+
+def at(x, y, w, h, inner):
+    return f'<Group name="at" x="{x}" y="{y}" width="{w}" height="{h}">{inner}</Group>'
+
+
+# Pola obejmują obszar obu układów: Sport/Chronograf/Klasyczny oraz Sport 1 (pierwsza wersja).
+GL = (70, 294, 290, 72)
+DL = (232, 324, 132, 60)
+GR = (137, 362, 176, 68)
+
+
 def glucose_slot():
-    # 210x64: wartość wyrównana do prawej, zaraz za nią duża zielona strzałka trendu
-    body = (text(0, 0, 166, 64, "%s", 62, WHITE, align="END", params=("[COMPLICATION.TEXT]",))
-            + image(170, 9, 44, 44, "[COMPLICATION.MONOCHROMATIC_IMAGE]", GREEN))
-    return slot(0, "slot_glucose", 70, 294, 214, 64, ["SHORT_TEXT", "RANGED_VALUE"],
-                '<BoundingBox x="0" y="0" width="214" height="64"/>',
+    # 214x64: wartość wyrównana do prawej, zaraz za nią duża zielona strzałka trendu
+    cur = at(0, 0, 214, 64, text(0, 0, 166, 64, "%s", 62, WHITE, align="END", params=("[COMPLICATION.TEXT]",))
+             + image(170, 9, 44, 44, "[COMPLICATION.MONOCHROMATIC_IMAGE]", GREEN))
+    # Sport 1: 270x66 od (90, 300)
+    old = at(20, 6, 270, 66, text(0, 0, 176, 66, "%s", 64, WHITE, align="END", params=("[COMPLICATION.TEXT]",))
+             + image(182, 10, 46, 46, "[COMPLICATION.MONOCHROMATIC_IMAGE]", GREEN))
+    x, y, w, h = GL
+    body = per_style(w, h, {"*": cur, "sport1": old})
+    return slot(0, "slot_glucose", x, y, w, h, ["SHORT_TEXT", "RANGED_VALUE"],
+                f'<BoundingBox x="0" y="0" width="{w}" height="{h}"/>',
                 {"SHORT_TEXT": body, "RANGED_VALUE": body})
 
 
 def unit_and_delta():
-    # kolumna po prawej od strzałki: jednostka, pod nią delta i czas
-    unit = text(288, 306, 70, 18, "mg/dL", 14, GREY, weight="NORMAL", align="START")
-    delta = slot(1, "slot_delta", 288, 324, 76, 20, ["SHORT_TEXT"],
-                 '<BoundingBox x="0" y="0" width="76" height="20"/>',
-                 {"SHORT_TEXT": text(0, 0, 76, 20, "%s %s", 13, LIGHT, align="START", params=("[COMPLICATION.TEXT]", "[COMPLICATION.TITLE]"))})
+    unit = per_style(450, 450, {
+        "*": text(288, 306, 70, 18, "mg/dL", 14, GREY, weight="NORMAL", align="START"),
+        "sport1": text(120, 364, 104, 20, "mg/dL", 15, GREY, weight="NORMAL", align="END")})
+    x, y, w, h = DL
+    cur = text(56, 0, 76, 20, "%s %s", 13, LIGHT, align="START", params=("[COMPLICATION.TEXT]", "[COMPLICATION.TITLE]"))
+    old = text(0, 40, 110, 20, "%s %s", 15, LIGHT, align="START", params=("[COMPLICATION.TEXT]", "[COMPLICATION.TITLE]"))
+    delta = slot(1, "slot_delta", x, y, w, h, ["SHORT_TEXT"],
+                 f'<BoundingBox x="0" y="0" width="{w}" height="{h}"/>',
+                 {"SHORT_TEXT": per_style(w, h, {"*": cur, "sport1": old})})
     return unit + delta
 
 
 def graph_slot():
-    w, h = 156, 44
-    def b(res):
-        return (f'<PartDraw x="0" y="0" width="{w}" height="{h}">'
-                f'<RoundRectangle x="0" y="0" width="{w}" height="{h}" cornerRadiusX="8" cornerRadiusY="8">'
-                f'<Fill color="#FF262F36"/></RoundRectangle></PartDraw>'
-                + image(2, 2, w - 4, h - 4, res))
-    return slot(2, "slot_graph", 147, 362, w, h, ["PHOTO_IMAGE", "SMALL_IMAGE"],
-                f'<BoundingRoundBox x="0" y="0" width="{w}" height="{h}" cornerRadius="8"/>',
-                {"PHOTO_IMAGE": b("[COMPLICATION.PHOTO_IMAGE]"), "SMALL_IMAGE": b("[COMPLICATION.SMALL_IMAGE]")})
+    def b(res, gx, gy, gw, gh):
+        return at(gx, gy, gw, gh,
+                  f'<PartDraw x="0" y="0" width="{gw}" height="{gh}">'
+                  f'<RoundRectangle x="0" y="0" width="{gw}" height="{gh}" cornerRadiusX="8" cornerRadiusY="8">'
+                  f'<Fill color="#FF262F36"/></RoundRectangle></PartDraw>'
+                  + image(2, 2, gw - 4, gh - 4, res))
+    x, y, w, h = GR
+    def body(res):
+        return per_style(w, h, {"*": b(res, 10, 0, 156, 44), "sport1": b(res, 0, 26, 176, 42)})
+    return slot(2, "slot_graph", x, y, w, h, ["PHOTO_IMAGE", "SMALL_IMAGE"],
+                f'<BoundingBox x="0" y="0" width="{w}" height="{h}"/>',
+                {"PHOTO_IMAGE": body("[COMPLICATION.PHOTO_IMAGE]"), "SMALL_IMAGE": body("[COMPLICATION.SMALL_IMAGE]")})
 
 
 # ------------------------------------------------------------------ wskazówki
@@ -227,6 +258,11 @@ def group(name, inner):
 
 def sport_back():
     return background() + ticks() + top() + weather()
+
+
+def sport1_back():
+    # pierwsza wersja Glukoza Sport (prostokątne panele), ten sam układ góry i pogody
+    return background("bg_sport1") + ticks() + top() + weather()
 
 
 # ------------------------------------------------------------------ styl: Chronograf (poprzedni wygląd)
@@ -331,6 +367,7 @@ def classic_hands():
 
 
 STYLES = [("sport", "style_sport", sport_back, sport_hands),
+          ("sport1", "style_sport1", sport1_back, sport_hands),
           ("chrono", "style_chrono", chrono_back, chrono_hands),
           ("classic", "style_classic", classic_back, classic_hands)]
 

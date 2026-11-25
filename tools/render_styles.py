@@ -58,20 +58,29 @@ class Face:
         self.img.alpha_composite(rot, (int(C * S - rot.width / 2), int(C * S - rot.height / 2)))
         self.d = ImageDraw.Draw(self.img)
 
-    def shared(self, value_font=B):
+    def shared(self, value_font=B, old=False):
         # lewe pole: bateria z łukiem
         self.arc(108, 226, 55, 0, 360, (42, 50, 60), 7)
         self.arc(108, 226, 55, 0, 302, ACC, 7)
         self.t(52, 192, 112, 36, "84%", 30, WHITE)
         self.t(56, 228, 104, 20, "BAT", 15, GREY, f=M)
         # glukoza
-        self.t(70, 294, 166, 64, "118", 62, WHITE, align="r", f=value_font)
-        ax, ay = 246 * S, 326 * S
+        if old:  # Sport 1: wartość wyżej na środku, jednostka i delta pod spodem, wykres niżej
+            self.t(90, 300, 176, 66, "118", 64, WHITE, align="r", f=value_font)
+            ax, ay = 278 * S, 333 * S
+        else:
+            self.t(70, 294, 166, 64, "118", 62, WHITE, align="r", f=value_font)
+            ax, ay = 246 * S, 326 * S
         self.d.line([(ax, ay + 16 * S), (ax + 26 * S, ay - 12 * S)], fill=GREEN, width=6 * S)
         self.d.line([(ax + 6 * S, ay - 13 * S), (ax + 27 * S, ay - 13 * S), (ax + 27 * S, ay + 8 * S)], fill=GREEN, width=6 * S, joint="curve")
-        self.t(288, 306, 70, 18, "mg/dL", 14, GREY, f=M, align="l")
-        self.t(288, 324, 76, 20, "+3 2 min", 13, LIGHT, align="l")
-        gx, gy, gw, gh = 147 * S, 362 * S, 156 * S, 44 * S
+        if old:
+            self.t(120, 364, 104, 20, "mg/dL", 15, GREY, f=M, align="r")
+            self.t(232, 364, 110, 20, "+3 2 min", 15, LIGHT, align="l")
+            gx, gy, gw, gh = 137 * S, 388 * S, 176 * S, 42 * S
+        else:
+            self.t(288, 306, 70, 18, "mg/dL", 14, GREY, f=M, align="l")
+            self.t(288, 324, 76, 20, "+3 2 min", 13, LIGHT, align="l")
+            gx, gy, gw, gh = 147 * S, 362 * S, 156 * S, 44 * S
         self.d.rounded_rectangle([gx, gy, gx + gw, gy + gh], radius=8 * S, fill=(20, 24, 28))
         self.d.line([(gx + 4 * S, gy + 14 * S), (gx + gw - 4 * S, gy + 14 * S)], fill=(230, 150, 40), width=S)
         self.d.line([(gx + 4 * S, gy + 34 * S), (gx + gw - 4 * S, gy + 34 * S)], fill=(220, 50, 50), width=S)
@@ -86,8 +95,8 @@ class Face:
         return o
 
 
-def sport():
-    f = Face("bg_sport.png")
+def sport(bg="bg_sport.png", old=False):
+    f = Face(bg)
     for k in range(60):
         if k % 15 == 0: f.line(k * 6, 204, 220, ORA, 4)
         elif k % 5 == 0: f.line(k * 6, 206, 220, ACC, 3.4)
@@ -100,7 +109,7 @@ def sport():
     f.arc(342, 226, 55, 20, 160, ACC, 5)
     f.t(290, 204, 104, 40, "14°", 34, WHITE)
     f.t(302, 244, 80, 20, "POGODA", 13, GREY, f=M)
-    f.shared()
+    f.shared(old=old)
     f.hand("hand_hour_o.png", 28, 138, 0.8551, (10 + 9 / 60) * 30)
     f.hand("hand_minute_o.png", 26, 206, 0.8932, 9.37 * 6)
     f.hand("hand_second_o.png", 8, 232, 0.8448, 22 * 6, RED)
@@ -154,7 +163,8 @@ def classic():
 
 if __name__ == "__main__":
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else None
-    for name, fn in (("sport", sport), ("chrono", chrono), ("classic", classic)):
+    sport1 = lambda: sport("bg_sport1.png", old=True)
+    for name, fn in (("sport", sport), ("sport1", sport1), ("chrono", chrono), ("classic", classic)):
         img = fn()
         img.resize((160, 160), Image.LANCZOS).save(R / f"style_{name}.png")
         if name == "sport":
