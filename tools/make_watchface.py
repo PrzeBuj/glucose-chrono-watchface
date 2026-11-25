@@ -160,31 +160,31 @@ def weather():
 # ------------------------------------------------------------------ dół: glukoza, delta, wykres
 
 def glucose_slot():
-    # 270x66: wartość wyrównana do prawej, zaraz za nią duża zielona strzałka trendu
-    body = (text(0, 0, 176, 66, "%s", 64, WHITE, align="END", params=("[COMPLICATION.TEXT]",))
-            + image(182, 10, 46, 46, "[COMPLICATION.MONOCHROMATIC_IMAGE]", GREEN)
-            + text(230, 22, 40, 20, "%s", 13, GREY, weight="NORMAL", align="START", params=("[COMPLICATION.TITLE]",)))
-    return slot(0, "slot_glucose", 90, 300, 270, 66, ["SHORT_TEXT", "RANGED_VALUE"],
-                '<BoundingBox x="0" y="0" width="270" height="66"/>',
+    # 210x64: wartość wyrównana do prawej, zaraz za nią duża zielona strzałka trendu
+    body = (text(0, 0, 166, 64, "%s", 62, WHITE, align="END", params=("[COMPLICATION.TEXT]",))
+            + image(170, 9, 44, 44, "[COMPLICATION.MONOCHROMATIC_IMAGE]", GREEN))
+    return slot(0, "slot_glucose", 70, 294, 214, 64, ["SHORT_TEXT", "RANGED_VALUE"],
+                '<BoundingBox x="0" y="0" width="214" height="64"/>',
                 {"SHORT_TEXT": body, "RANGED_VALUE": body})
 
 
 def unit_and_delta():
-    unit = text(120, 364, 104, 20, "mg/dL", 15, GREY, weight="NORMAL", align="END")
-    body = text(0, 0, 110, 20, "%s %s", 15, LIGHT, align="START", params=("[COMPLICATION.TEXT]", "[COMPLICATION.TITLE]"))
-    delta = slot(1, "slot_delta", 232, 364, 110, 20, ["SHORT_TEXT"],
-                 '<BoundingBox x="0" y="0" width="110" height="20"/>', {"SHORT_TEXT": body})
+    # kolumna po prawej od strzałki: jednostka, pod nią delta i czas
+    unit = text(288, 306, 70, 18, "mg/dL", 14, GREY, weight="NORMAL", align="START")
+    delta = slot(1, "slot_delta", 288, 324, 76, 20, ["SHORT_TEXT"],
+                 '<BoundingBox x="0" y="0" width="76" height="20"/>',
+                 {"SHORT_TEXT": text(0, 0, 76, 20, "%s %s", 13, LIGHT, align="START", params=("[COMPLICATION.TEXT]", "[COMPLICATION.TITLE]"))})
     return unit + delta
 
 
 def graph_slot():
-    w, h = 176, 42
+    w, h = 156, 44
     def b(res):
         return (f'<PartDraw x="0" y="0" width="{w}" height="{h}">'
                 f'<RoundRectangle x="0" y="0" width="{w}" height="{h}" cornerRadiusX="8" cornerRadiusY="8">'
                 f'<Fill color="#FF262F36"/></RoundRectangle></PartDraw>'
                 + image(2, 2, w - 4, h - 4, res))
-    return slot(2, "slot_graph", 137, 388, w, h, ["PHOTO_IMAGE", "SMALL_IMAGE"],
+    return slot(2, "slot_graph", 147, 362, w, h, ["PHOTO_IMAGE", "SMALL_IMAGE"],
                 f'<BoundingRoundBox x="0" y="0" width="{w}" height="{h}" cornerRadius="8"/>',
                 {"PHOTO_IMAGE": b("[COMPLICATION.PHOTO_IMAGE]"), "SMALL_IMAGE": b("[COMPLICATION.SMALL_IMAGE]")})
 

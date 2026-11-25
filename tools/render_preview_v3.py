@@ -46,17 +46,17 @@ def main(out):
     t(290, 204, 104, 40, "14°", 34, WHITE)
     t(302, 244, 80, 20, "POGODA", 13, GREY, f=M)
     # glukoza
-    t(90, 300, 176, 66, "118", 64, WHITE, align="r")
-    ax, ay = 272 * S, 333 * S
+    t(70, 294, 166, 64, "118", 62, WHITE, align="r")
+    ax, ay = 246 * S, 326 * S
     d.line([(ax, ay + 16 * S), (ax + 26 * S, ay - 12 * S)], fill=GREEN, width=6 * S)
     d.line([(ax + 6 * S, ay - 13 * S), (ax + 27 * S, ay - 13 * S), (ax + 27 * S, ay + 8 * S)], fill=GREEN, width=6 * S, joint="curve")
-    t(120, 364, 104, 20, "mg/dL", 15, GREY, f=M, align="r")
-    t(232, 364, 110, 20, "+3  2 min", 15, (195, 200, 207), align="l")
+    t(288, 306, 70, 18, "mg/dL", 14, GREY, f=M, align="l")
+    t(288, 324, 76, 20, "+3 2 min", 13, (195, 200, 207), align="l")
     # wykres
-    gx, gy, gw, gh = 137 * S, 388 * S, 176 * S, 42 * S
+    gx, gy, gw, gh = 147 * S, 362 * S, 156 * S, 44 * S
     d.rounded_rectangle([gx, gy, gx + gw, gy + gh], radius=8 * S, fill=(38, 47, 54))
-    d.rectangle([gx + 4 * S, gy + 12 * S, gx + gw - 4 * S, gy + 32 * S], fill=(22, 90, 45))
-    pts = [(gx + (6 + k * 6) * S, gy + (28 - 10 * math.sin(k / 4) - k * 0.25) * S) for k in range(28)]
+    d.rectangle([gx + 3 * S, gy + 12 * S, gx + gw - 3 * S, gy + 32 * S], fill=(22, 90, 45))
+    pts = [(gx + (5 + k * 5) * S, gy + (27 - 8 * math.sin(k / 4) - k * 0.2) * S) for k in range(30)]
     for p in pts:
         d.ellipse([p[0] - 1.6 * S, p[1] - 1.6 * S, p[0] + 1.6 * S, p[1] + 1.6 * S], fill=(230, 240, 235))
     # wskazówki

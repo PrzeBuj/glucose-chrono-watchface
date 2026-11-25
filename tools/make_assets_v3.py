@@ -29,10 +29,23 @@ def lerp(c1, c2, t):
     return tuple(int(c1[k] + (c2[k] - c1[k]) * t) for k in range(len(c1)))
 
 
-def panel_layer(size, draw_shape, top, bottom, edge, y0, y1):
+def smooth(mask, radius):
+    """Zaokrągla wszystkie narożniki maski (wypukłe i wklęsłe)."""
+    return mask.filter(ImageFilter.GaussianBlur(u(radius))).point(lambda p: 255 if p >= 128 else 0)
+
+
+def shape_mask(size, keep, cut):
+    m = Image.new("L", size, 0)
+    keep(ImageDraw.Draw(m))
+    cm = Image.new("L", size, 0)
+    cut(ImageDraw.Draw(cm))
+    m = Image.composite(Image.new("L", size, 0), m, cm)
+    return smooth(m, 5)
+
+
+def panel_layer(mask, top, bottom, edge, y0, y1):
     """Panel z pionowym gradientem (jaśniejszy u góry), krawędzią i cieniem."""
-    mask = Image.new("L", size, 0)
-    draw_shape(ImageDraw.Draw(mask), 255)
+    size = mask.size
     grad = Image.new("RGBA", size, (0, 0, 0, 0))
     gd = ImageDraw.Draw(grad)
     for yy in range(u(y0), u(y1) + 1, 2):
@@ -40,9 +53,9 @@ def panel_layer(size, draw_shape, top, bottom, edge, y0, y1):
         gd.line([(0, yy), (size[0], yy)], fill=lerp(top, bottom, min(1, t)) + (255,), width=2)
     layer = Image.new("RGBA", size, (0, 0, 0, 0))
     layer.paste(grad, (0, 0), mask)
-    # krawędź: jaśniejsza u góry, ciemniejsza na dole
-    rim = Image.new("L", size, 0)
-    draw_shape(ImageDraw.Draw(rim), 255, outline=True)
+    # krawędź: obrys maski, jaśniejszy u góry
+    inner = mask.filter(ImageFilter.MinFilter(int(u(1.4)) // 2 * 2 + 1))
+    rim = Image.composite(Image.new("L", size, 0), mask, inner)
     rim_col = Image.new("RGBA", size, (0, 0, 0, 0))
     rd = ImageDraw.Draw(rim_col)
     for yy in range(u(y0) - u(4), u(y1) + 1, 2):
@@ -83,14 +96,28 @@ def background():
     img.paste(hexl, (0, 0), shade)
 
     top, bottom, edge = (70, 83, 92), (36, 45, 51), (118, 132, 142, 255)
-    shapes = [
-        (lambda d, c, outline=False: d.rounded_rectangle([u(92), u(46), u(358), u(162)], radius=u(34), fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 46, 162),
-        (lambda d, c, outline=False: d.ellipse([u(46), u(164), u(170), u(288)], fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 164, 288),
-        (lambda d, c, outline=False: d.ellipse([u(280), u(164), u(404), u(288)], fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 164, 288),
-        (lambda d, c, outline=False: d.rounded_rectangle([u(58), u(296), u(392), u(480)], radius=u(40), fill=None if outline else c, outline=c if outline else None, width=u(1.4)), 296, 450),
-    ]
-    for shape, y0, y1 in shapes:
-        sh, layer = panel_layer(size, shape, top, bottom, edge, y0, y1)
+    R_IN = 194          # panele kończą się przed skalą (podziałki od r=204)
+    WID = [(108, 226), (342, 226)]
+    GAP = 9             # odstęp paneli od kół widżetów
+
+    def disc(d, cx, cy, r):
+        d.ellipse([u(cx - r), u(cy - r), u(cx + r), u(cy + r)], fill=255)
+
+    def cut_widgets(d):
+        for cx, cy in WID:
+            disc(d, cx, cy, 62 + GAP)
+
+    top_mask = shape_mask(size, lambda d: (disc(d, 225, 225, R_IN), d.rectangle([0, 0, u(N), u(N)], fill=0) if False else None,
+                                           d.rectangle([0, u(162), u(N), u(N)], fill=0)), cut_widgets)
+    bottom_mask = shape_mask(size, lambda d: (disc(d, 225, 225, R_IN), d.rectangle([0, 0, u(N), u(290)], fill=0)), cut_widgets)
+    circle_masks = []
+    for cx, cy in WID:
+        m = Image.new("L", size, 0)
+        disc(ImageDraw.Draw(m), cx, cy, 62)
+        circle_masks.append((m, cy - 62, cy + 62))
+    shapes = [(top_mask, 31, 162), (bottom_mask, 290, 419)] + circle_masks
+    for mask, y0, y1 in shapes:
+        sh, layer = panel_layer(mask, top, bottom, edge, y0, y1)
         img = Image.alpha_composite(img, sh)
         img = Image.alpha_composite(img, layer)
 
