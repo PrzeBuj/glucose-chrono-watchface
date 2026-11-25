@@ -125,7 +125,7 @@ def bar_3d(img, ang_deg, r1, r2, w, lume=False):
 
 def background():
     img = to_img(carbon(), np.ones_like(RAD))
-    R_DIAL = 160
+    R_DIAL = 175
     # szara tarcza: cień na włóknie, wypukła powierzchnia, ciemny rant
     dial_m = Image.fromarray(((RAD <= R_DIAL) * 255).astype(np.uint8), "L")
     img = Image.alpha_composite(img, shadow(dial_m, 4, 2, 3, 0.9))
@@ -138,8 +138,8 @@ def background():
     # kreski minutowe na obrzeżu
     d = ImageDraw.Draw(img)
     for k in range(60):
-        if k % 5 == 0:
-            continue
+        if k % 5 == 0 or k in (1, 59, 14, 16, 29, 31, 44, 46):
+            continue  # przy cyfrach bez kresek
         a = math.radians(k * 6)
         d.line([(u(225 + 203 * math.sin(a)), u(225 - 203 * math.cos(a))), (u(225 + 211 * math.sin(a)), u(225 - 211 * math.cos(a)))],
                fill=(205, 210, 214, 255), width=u(1.3))
@@ -154,7 +154,7 @@ def background():
     # cyfry 12, 3, 6, 9: polerowany metal (gradient), ciemny obrys i cień
     from PIL import ImageFont
     fo = ImageFont.truetype("/usr/share/fonts/opentype/inter/Inter-Bold.otf", u(27))
-    for txt, ang, r in (("12", 0, 190), ("3", 90, 191), ("6", 180, 193), ("9", 270, 191)):
+    for txt, ang, r in (("12", 0, 199), ("3", 90, 200), ("6", 180, 199), ("9", 270, 200)):
         a = math.radians(ang)
         cx, cy = 225 + r * math.sin(a), 225 - r * math.cos(a)
         m = Image.new("L", img.size, 0)
