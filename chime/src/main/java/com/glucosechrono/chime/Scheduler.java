@@ -35,10 +35,17 @@ final class Scheduler {
         AlarmManager am = c.getSystemService(AlarmManager.class);
         PendingIntent pi = intent(c);
         am.cancel(pi);
-        if (!Prefs.enabled(c)) return;
+        if (!Prefs.enabled(c)) {
+            Prefs.get(c).edit().remove(Prefs.NEXT).apply();
+            return;
+        }
         long at = nextFullHour();
+        Prefs.get(c).edit().putLong(Prefs.NEXT, at).apply();
         if (canExact(c)) {
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+            // Budzik typu „alarm clock”: system i oszczędzanie baterii producenta go nie odkładają.
+            PendingIntent show = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class),
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            am.setAlarmClock(new AlarmManager.AlarmClockInfo(at, show), pi);
         } else {
             // Bez zgody na dokładne budziki system może opóźnić sygnał o kilka minut.
             am.setWindow(AlarmManager.RTC_WAKEUP, at, 60_000, pi);

@@ -1,15 +1,10 @@
 package com.glucosechrono.chime;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -22,7 +17,6 @@ import java.util.function.Consumer;
 public class MainActivity extends Activity {
     private LinearLayout list;
     private TextView exactInfo;
-    private Button exactButton;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -34,8 +28,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        refreshExact();
         Scheduler.schedule(this);
+        refreshExact();
     }
 
     private int dp(float v) {
@@ -92,24 +86,19 @@ public class MainActivity extends Activity {
         exactInfo.setGravity(Gravity.CENTER);
         exactInfo.setPadding(0, dp(10), 0, 0);
         list.addView(exactInfo);
-        exactButton = button("Zezwól na dokładny czas");
-        exactButton.setOnClickListener(v -> {
-            try {
-                startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                        Uri.parse("package:" + getPackageName())));
-            } catch (ActivityNotFoundException e) {
-                startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:" + getPackageName())));
-            }
-        });
-        list.addView(exactButton);
     }
 
     private void refreshExact() {
-        boolean ok = Scheduler.canExact(this);
-        exactInfo.setText(ok ? "Sygnał co do sekundy o pełnej godzinie."
-                : "Bez tej zgody sygnał może się spóźniać o 1–2 minuty.");
-        exactButton.setVisibility(ok ? View.GONE : View.VISIBLE);
+        StringBuilder sb = new StringBuilder();
+        long next = Prefs.get(this).getLong(Prefs.NEXT, 0);
+        sb.append(next > 0 ? "Następny sygnał: " + new java.text.SimpleDateFormat("HH:mm", java.util.Locale.ROOT)
+                .format(new java.util.Date(next)) : "Sygnał wyłączony");
+        sb.append("\nOstatnio: ").append(Prefs.get(this).getString(Prefs.LAST, "jeszcze nie było"));
+        android.media.AudioManager am = getSystemService(android.media.AudioManager.class);
+        if (am != null && am.getStreamVolume(android.media.AudioManager.STREAM_ALARM) == 0)
+            sb.append("\nGłośność alarmów zegarka jest na zero, sygnał nie będzie słyszalny.");
+        if (!Scheduler.canExact(this)) sb.append("\nSystem nie pozwala na dokładny budzik, sygnał może się spóźniać.");
+        exactInfo.setText(sb.toString());
     }
 
     private static String[] hours(String prefix) {
@@ -140,6 +129,7 @@ public class MainActivity extends Activity {
         s.setOnCheckedChangeListener((b, checked) -> {
             Prefs.get(this).edit().putBoolean(key, checked).apply();
             Scheduler.schedule(this);
+            refreshExact();
         });
         list.addView(s, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));

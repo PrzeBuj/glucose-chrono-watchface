@@ -14,6 +14,8 @@ final class Prefs {
     static final String NIGHT_FROM = "night_from";
     static final String NIGHT_TO = "night_to";
     static final String RESPECT_DND = "respect_dnd";
+    static final String LAST = "last";           // ostatnie zdarzenie, np. "11:00 zagrał"
+    static final String NEXT = "next";           // czas następnego budzika (ms)
 
     private Prefs() {}
 
@@ -30,6 +32,11 @@ final class Prefs {
     static int nightFrom(Context c) { return get(c).getInt(NIGHT_FROM, 23); }
     static int nightTo(Context c) { return get(c).getInt(NIGHT_TO, 7); }
     static boolean respectDnd(Context c) { return get(c).getBoolean(RESPECT_DND, true); }
+
+    static void log(Context c, String text) {
+        String t = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.ROOT).format(new java.util.Date());
+        get(c).edit().putString(LAST, t + " " + text).apply();
+    }
 
     /** Czy o tej godzinie (0-23) obowiązuje cisza nocna. */
     static boolean isNightHour(Context c, int hour) {
