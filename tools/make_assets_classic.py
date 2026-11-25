@@ -146,16 +146,28 @@ def background():
     # indeksy godzinowe 3D
     for h in range(12):
         ang = h * 30
-        if h in (3, 9):
-            continue
-        if h == 0:
-            for off in (-5.5, 5.5):
-                img = bar_3d_offset(img, 0, 172, 205, 8, off)
-        elif h == 6:
-            for off in (-4.5, 4.5):
-                img = bar_3d_offset(img, 180, 192, 208, 6, off)
+        if h in (0, 3, 6, 9):
+            continue  # tu są cyfry
         else:
             img = bar_3d(img, ang, 176, 205, 9, lume=h in (4, 8))
+
+    # cyfry 12, 3, 6, 9: polerowany metal (gradient), ciemny obrys i cień
+    from PIL import ImageFont
+    fo = ImageFont.truetype("/usr/share/fonts/opentype/inter/Inter-Bold.otf", u(27))
+    for txt, ang, r in (("12", 0, 190), ("3", 90, 191), ("6", 180, 193), ("9", 270, 191)):
+        a = math.radians(ang)
+        cx, cy = 225 + r * math.sin(a), 225 - r * math.cos(a)
+        m = Image.new("L", img.size, 0)
+        md = ImageDraw.Draw(m)
+        bb = md.textbbox((0, 0), txt, font=fo)
+        md.text((u(cx) - (bb[2] - bb[0]) / 2 - bb[0], u(cy) - (bb[3] - bb[1]) / 2 - bb[1]), txt, font=fo, fill=255)
+        img = Image.alpha_composite(img, shadow(m, 1.6, 1.2, 2.0, 0.9))
+        outline = m.filter(ImageFilter.MaxFilter(u(1.2) // 2 * 2 + 1))
+        img = composite(img, gray(70 + 0 * RAD), np.array(outline, dtype=np.float32) / 255)
+        top, bot = cy - 13, cy + 13
+        t = np.clip((yy - top) / (bot - top), 0, 1)
+        v = 245 - 110 * t + 30 * np.exp(-((t - 0.45) / 0.08) ** 2) - 40 * np.exp(-((t - 0.55) / 0.06) ** 2)
+        img = composite(img, gray(v), np.array(m, dtype=np.float32) / 255)
 
     # bezel: niebieskie szkło szafirowe i biała linia
     ring_rgb = np.stack([30 + 40 * np.cos(ANG - LIGHT), 70 + 60 * np.cos(ANG - LIGHT), 110 + 70 * np.cos(ANG - LIGHT)], axis=-1) + 30
