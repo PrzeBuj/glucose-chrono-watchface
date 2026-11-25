@@ -240,13 +240,13 @@ WID = ((108, 226), (342, 226))
 
 def chrono_back():
     gears = (
-        '<BooleanConfiguration id="gears"><BooleanOption id="TRUE"><Group name="gears" x="0" y="0" width="450" height="450">'
+        '<Group name="gears" x="0" y="0" width="450" height="450">'
         '<PartImage x="78" y="78" width="294" height="294" pivotX="0.5" pivotY="0.5"><Image resource="gear_big"/>'
         '<Transform target="angle" value="([SECONDS_IN_DAY] % 60) * 6"/></PartImage>'
         + "".join(
             f'<PartImage x="{cx - 64}" y="{cy - 64}" width="128" height="128" pivotX="0.5" pivotY="0.5"><Image resource="gear_small"/>'
             '<Transform target="angle" value="360 - ([SECONDS_IN_DAY] % 26) * 13.846"/></PartImage>' for cx, cy in WID)
-        + '<Variant mode="AMBIENT" target="alpha" value="0"/></Group></BooleanOption></BooleanConfiguration>'
+        + '<Variant mode="AMBIENT" target="alpha" value="0"/></Group>'
     )
     d = [f'<Rectangle x="0" y="0" width="450" height="450"><Fill color="{DIAL}"/></Rectangle>']
     draw = [f'<Arc centerX="{C}" centerY="{C}" width="429" height="429" startAngle="0" endAngle="360"><Stroke color="{BLACK}" thickness="21"/></Arc>']
@@ -335,9 +335,9 @@ STYLES = [("sport", "style_sport", sport_back, sport_hands),
           ("classic", "style_classic", classic_back, classic_hands)]
 
 
-def by_style(part):
-    opts = "".join(f'<ListOption id="{sid}">{group(sid + "_" + part, (back if part == "back" else hands)())}</ListOption>'
-                   for sid, _, back, hands in STYLES)
+def by_style():
+    # Jedna lista stylów (tło i wskazówki razem): dwie listy o tym samym id nie odświeżały się na zegarku po zmianie stylu.
+    opts = "".join(f'<ListOption id="{sid}">{group(sid, back() + hands())}</ListOption>' for sid, _, back, hands in STYLES)
     return f'<ListConfiguration id="style">{opts}</ListConfiguration>'
 
 
@@ -349,12 +349,12 @@ def user_configurations():
             f'<ListConfiguration id="style" displayName="@string/cfg_style" defaultValue="sport">{styles}</ListConfiguration>'
             f'<ColorConfiguration id="theme" displayName="@string/cfg_theme" defaultValue="0">{opts}</ColorConfiguration>'
             f'<ColorConfiguration id="dial" displayName="@string/cfg_dial" defaultValue="0">{dials}</ColorConfiguration>'
-            '<BooleanConfiguration id="gears" displayName="@string/cfg_gears" defaultValue="TRUE"/>'
             "</UserConfigurations>")
 
 
 def build():
-    body = (by_style("back") + left_slot() + glucose_slot() + unit_and_delta() + graph_slot() + by_style("hands"))
+    # pola danych nad wskazówkami: wartości glukozy nie zasłania żadna wskazówka
+    body = (by_style() + left_slot() + glucose_slot() + unit_and_delta() + graph_slot())
     return ('<?xml version="1.0" encoding="utf-8"?>\n<WatchFace width="450" height="450">\n'
             '<Metadata key="CLOCK_TYPE" value="ANALOG"/>\n<Metadata key="PREVIEW_TIME" value="10:09:22"/>\n'
             f"{user_configurations()}\n<Scene backgroundColor=\"#FF000000\">\n{body}\n</Scene>\n</WatchFace>\n")
