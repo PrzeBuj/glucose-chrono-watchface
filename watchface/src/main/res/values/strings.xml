@@ -5,6 +5,7 @@
     <string name="slot_delta">Delta i czas odczytu</string>
     <string name="slot_graph">Wykres glukozy</string>
     <string name="slot_left">Lewa tarczka</string>
+    <string name="slot_weather">Pogoda (prawe koło)</string>
     <string name="slot_right">Prawa tarczka</string>
     <string name="slot_bottom">Pole pod wykresem</string>
     <string name="cfg_style">Styl</string>

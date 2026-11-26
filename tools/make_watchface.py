@@ -146,18 +146,40 @@ def left_slot():
 # ------------------------------------------------------------------ prawe koło: pogoda
 
 def weather():
+    # pierścień wokół prawego koła; samą temperaturę rysuje pole pogody (slot 4)
     cx, cy = 342, 226
-    ring = (f'<PartDraw x="0" y="0" width="450" height="450">'
+    return (f'<PartDraw x="0" y="0" width="450" height="450">'
             f'<Arc centerX="{cx}" centerY="{cy}" width="110" height="110" startAngle="200" endAngle="340">'
             f'<Stroke color="{ORANGE}" thickness="5" cap="ROUND"/></Arc>'
             f'<Arc centerX="{cx}" centerY="{cy}" width="110" height="110" startAngle="20" endAngle="160">'
             f'<Stroke color="{ACCENT}" thickness="5" cap="ROUND"/></Arc></PartDraw>')
+
+
+def weather_slot():
+    """Prawe koło jako pole: puste pokazuje temperaturę z systemu (bez akcji po stuknięciu),
+    a po wybraniu komplikacji aplikacji pogody stuknięcie otwiera tę aplikację."""
+    d = 124
+    x, y = 342 - d // 2, 226 - d // 2
+    cx = cy = d // 2
     ok = text(cx - 52, cy - 22, 104, 40, "%s°", 34, WHITE, params=("[WEATHER.TEMPERATURE]",))
     na = text(cx - 52, cy - 22, 104, 40, "--°", 34, WHITE)
-    label = text(cx - 40, cy + 18, 80, 20, "POGODA", 13, GREY, weight="NORMAL")
-    return (ring + "<Condition><Expressions>"
-            '<Expression name="weather"><![CDATA[[WEATHER.IS_AVAILABLE]]]></Expression></Expressions>'
-            f'<Compare expression="weather">{ok}</Compare><Default>{na}</Default></Condition>' + label)
+    native = ("<Condition><Expressions>"
+              '<Expression name="weather"><![CDATA[[WEATHER.IS_AVAILABLE]]]></Expression></Expressions>'
+              f'<Compare expression="weather">{ok}</Compare><Default>{na}</Default></Condition>'
+              + text(cx - 40, cy + 18, 80, 20, "POGODA", 13, GREY, weight="NORMAL"))
+    icon = image(48, 20, 28, 28, "[COMPLICATION.MONOCHROMATIC_IMAGE]", ACCENT)
+    value = text(6, 46, d - 12, 36, "%s", 30, WHITE, params=("[COMPLICATION.TEXT]",))
+    title = text(10, 82, d - 20, 20, "%s", 15, GREY, weight="NORMAL", params=("[COMPLICATION.TITLE]",))
+    return slot(
+        4, "slot_weather", x, y, d, d, ["SHORT_TEXT", "RANGED_VALUE", "MONOCHROMATIC_IMAGE", "EMPTY"],
+        f'<BoundingOval x="0" y="0" width="{d}" height="{d}"/>',
+        {
+            "SHORT_TEXT": icon + value + title,
+            "RANGED_VALUE": icon + value + title,
+            "MONOCHROMATIC_IMAGE": image(37, 37, 50, 50, "[COMPLICATION.MONOCHROMATIC_IMAGE]", ACCENT),
+            "EMPTY": native,
+        },
+    )
 
 
 # ------------------------------------------------------------------ dół: glukoza, delta, wykres
@@ -269,25 +291,16 @@ def chrono_back():
     for cx, cy in WID:
         draw.append(f'<Ellipse x="{cx - 60}" y="{cy - 60}" width="120" height="120"><Fill color="{SUB}"/><Stroke color="{WHITE}" thickness="2.4"/></Ellipse>')
     draw.append(f'<RoundRectangle x="155" y="64" width="141" height="54" cornerRadiusX="10" cornerRadiusY="10"><Fill color="{BLACK}"/><Stroke color="{WHITE}" thickness="1.9"/></RoundRectangle>')
-    # prawa tarczka: bateria zegarka (pole po lewej to komplikacja)
-    cx, cy = WID[1]
-    draw.append(f'<Arc centerX="{cx}" centerY="{cy}" width="110" height="110" startAngle="0" endAngle="360"><Stroke color="{TRACK}" thickness="7"/></Arc>')
-    draw.append(f'<Arc centerX="{cx}" centerY="{cy}" width="110" height="110" startAngle="0" endAngle="0"><Stroke color="{ACCENT}" thickness="7" cap="ROUND"/>'
-                '<Transform target="endAngle" value="[BATTERY_PERCENT] * 3.6"/></Arc>')
+    # prawa tarczka: pole pogody (slot 4), bateria zegarka w małym napisie u góry
     out = ('<PartDraw x="0" y="0" width="450" height="450">' + "".join(d) + "</PartDraw>" + gears
            + '<PartDraw x="0" y="0" width="450" height="450">' + "".join(draw) + "</PartDraw>")
     for n in (5, 10, 15, 20, 40, 45, 50, 55):
         x, y = polar(n * 6, 190)
         out += text(x - 15, y - 11, 30, 22, f"{n:02d}", 14, WHITE)
-    out += text(cx - 50, cy - 22, 100, 36, "%s%%", 28, WHITE, params=("[BATTERY_PERCENT]",))
-    out += text(cx - 40, cy + 14, 80, 20, "BAT", 13, GREY, weight="NORMAL")
     out += ('<DigitalClock x="155" y="66" width="141" height="50">'
             '<TimeText format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER" x="0" y="0" width="141" height="50">'
             f'<Font family="SYNC_TO_DEVICE" size="40" weight="BOLD" color="{WHITE}"/></TimeText></DigitalClock>')
-    temp_ok = text(130, 124, 80, 22, "%s°", 16, LIGHT, align="END", params=("[WEATHER.TEMPERATURE]",))
-    temp_na = text(130, 124, 80, 22, "--°", 16, LIGHT, align="END")
-    out += ("<Condition><Expressions><Expression name=\"weather\"><![CDATA[[WEATHER.IS_AVAILABLE]]]></Expression></Expressions>"
-            f'<Compare expression="weather">{temp_ok}</Compare><Default>{temp_na}</Default></Condition>')
+    out += text(130, 124, 80, 22, "%s%%", 16, LIGHT, align="END", params=("[BATTERY_PERCENT]",))
     out += image(226, 129, 14, 14, "ic_heart", HAND) + text(243, 124, 60, 22, "%s", 16, LIGHT, align="START", params=("round([HEART_RATE])",))
     return out
 
@@ -315,12 +328,6 @@ def classic_back():
     out += ('<DigitalClock x="110" y="106" width="230" height="58">'
             '<TimeText format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER" x="0" y="0" width="230" height="58">'
             f'<Font family="SYNC_TO_DEVICE" size="54" weight="NORMAL" color="{WHITE}"/></TimeText></DigitalClock>')
-    cx, cy = WID[1]
-    ok = text(cx - 52, cy - 18, 104, 38, "%s°C", 28, WHITE, weight="NORMAL", params=("[WEATHER.TEMPERATURE]",))
-    na = text(cx - 52, cy - 18, 104, 38, "--°C", 28, WHITE, weight="NORMAL")
-    out += ("<Condition><Expressions><Expression name=\"weather\"><![CDATA[[WEATHER.IS_AVAILABLE]]]></Expression></Expressions>"
-            f'<Compare expression="weather">{ok}</Compare><Default>{na}</Default></Condition>')
-    out += text(cx - 40, cy - 40, 80, 20, "POGODA", 12, GREY, weight="NORMAL")
     return out
 
 
@@ -363,7 +370,7 @@ def user_configurations():
 
 def build():
     # pola danych nad wskazówkami: wartości glukozy nie zasłania żadna wskazówka
-    body = (by_style() + left_slot() + glucose_slot() + unit_and_delta() + graph_slot())
+    body = (by_style() + left_slot() + weather_slot() + glucose_slot() + unit_and_delta() + graph_slot())
     return ('<?xml version="1.0" encoding="utf-8"?>\n<WatchFace width="450" height="450">\n'
             '<Metadata key="CLOCK_TYPE" value="ANALOG"/>\n<Metadata key="PREVIEW_TIME" value="10:09:22"/>\n'
             f"{user_configurations()}\n<Scene backgroundColor=\"#FF000000\">\n{body}\n</Scene>\n</WatchFace>\n")
