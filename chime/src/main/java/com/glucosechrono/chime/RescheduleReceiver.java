@@ -15,5 +15,6 @@ public class RescheduleReceiver extends BroadcastReceiver {
                 : a.endsWith("TIME_SET") || a.endsWith("TIMEZONE_CHANGED") ? "zmiana czasu" : "zmiana uprawnień";
         Prefs.log(c, "ustawiony ponownie (" + why + ")");
         Scheduler.schedule(c);
+        KeepAliveService.start(c);
     }
 }

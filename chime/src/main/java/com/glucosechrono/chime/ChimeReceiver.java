@@ -13,6 +13,7 @@ public class ChimeReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Context c = context.getApplicationContext();
         Scheduler.schedule(c);
+        KeepAliveService.start(c);
         if (!Prefs.enabled(c)) return;
         String why = quietReason(c);
         if (why != null) {

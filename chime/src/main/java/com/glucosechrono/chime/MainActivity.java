@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 public class MainActivity extends Activity {
     private LinearLayout list;
     private TextView exactInfo;
-    private Button batteryButton;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -30,6 +29,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Scheduler.schedule(this);
+        KeepAliveService.start(this);
         refreshExact();
     }
 
@@ -87,21 +87,6 @@ public class MainActivity extends Activity {
         exactInfo.setGravity(Gravity.CENTER);
         exactInfo.setPadding(0, dp(10), 0, 0);
         list.addView(exactInfo);
-        batteryButton = button("Wyłącz oszczędzanie baterii dla sygnału");
-        batteryButton.setOnClickListener(v -> {
-            try {
-                startActivity(new android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                        android.net.Uri.parse("package:" + getPackageName())));
-            } catch (RuntimeException e) {
-                try {
-                    startActivity(new android.content.Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
-                } catch (RuntimeException ignored) {
-                    startActivity(new android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            android.net.Uri.parse("package:" + getPackageName())));
-                }
-            }
-        });
-        list.addView(batteryButton);
     }
 
     private void refreshExact() {
@@ -115,9 +100,6 @@ public class MainActivity extends Activity {
         if (am != null && am.getStreamVolume(android.media.AudioManager.STREAM_ALARM) == 0)
             sb.append("\nGłośność alarmów zegarka jest na zero, sygnał nie będzie słyszalny.");
         if (!Scheduler.canExact(this)) sb.append("\nSystem nie pozwala na dokładny budzik, sygnał może się spóźniać.");
-        android.os.PowerManager pm = getSystemService(android.os.PowerManager.class);
-        boolean free = pm != null && pm.isIgnoringBatteryOptimizations(getPackageName());
-        batteryButton.setVisibility(free ? android.view.View.GONE : android.view.View.VISIBLE);
         exactInfo.setText(sb.toString());
     }
 
@@ -149,6 +131,7 @@ public class MainActivity extends Activity {
         s.setOnCheckedChangeListener((b, checked) -> {
             Prefs.get(this).edit().putBoolean(key, checked).apply();
             Scheduler.schedule(this);
+            KeepAliveService.start(this);
             refreshExact();
         });
         list.addView(s, new LinearLayout.LayoutParams(
